@@ -1,0 +1,4 @@
+This module is intended to allow finding nash equilibria of multi-player games.
+It is still in early development and since I'm just doing this in my spare time it may never get anywhere.
+So far all it can do is check if a purported nash equibrium is in fact an ne.
+
