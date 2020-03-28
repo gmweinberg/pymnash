@@ -2,7 +2,7 @@
 from copy import deepcopy
 import numpy as np
 from fractions import Fraction
-from util import iterprob
+from util import iterprob, iterindices
 
 class Game(object):
     """ A class for a multi-player normal form game."""
@@ -11,6 +11,7 @@ class Game(object):
     def __init__(self, payoffs, player_labels = None, action_labels = None):
         """Payoffs is an np.array of floats, giving payouts to all players.
            If labels are omitted or incomplete we'll just fill them in with stringified ints."""
+        self.verbose = False
         if type(payoffs) != np.ndarray:
             raise Exception('Payoffs must be numpy array')
         self.payoffs = payoffs
@@ -44,8 +45,9 @@ class Game(object):
         # also, a player must not be able to do better by playing an action not in his suport.
         # of course, no probability can be negative and all probabilities must sum to 1.
         # I am using the Fractions class to test that the sums of floats are equal. We may have to change this.
+        is_nash = True
         shape = self.payoffs.shape
-        for ii, player_profile in enumerate(profile):
+        for player, player_profile in enumerate(profile):
             prob_sum = 0
             support_utility = None
             nonsupport_utility = None
@@ -56,36 +58,68 @@ class Game(object):
             if prob_sum != 1:
                 raise Exception('probabilities do not sum to 1')
             others_profile = deepcopy(profile)
-            del others_profile[ii]
+            del others_profile[player]
             # check the utility 
             for jj, prob in enumerate(player_profile):
+                if self.verbose:
+                    print('player', player, 'others_profile', others_profile)
                 in_support = prob > 0
-                myslice = [slice(None)] * (len(shape) - 1)
-                myslice[ii] = jj # player index ii is playing strategy jj
+                myslice = [slice(None)] * len(shape)
+                myslice[-1] = player
                 relevant_payoffs = self.payoffs[tuple(myslice)]
-                # print("relevant payoffs 1", relevant_payoffs)
-                myslice = [slice(None)] * (len(shape) - 2)
-                myslice[-1] = ii
+                if self.verbose:
+                    print("all payoffs for player", player, relevant_payoffs)
+                myslice = [slice(None)] * (len(shape) - 1)
+                myslice[player] = jj
                 relevant_payoffs = relevant_payoffs[tuple(myslice)]
-                # print("relevant payoffs 2", relevant_payoffs)
+                if self.verbose:
+                    print("payoffs for player", player, relevant_payoffs)
                 utility = 0
                 for (thetuple, theprob) in iterprob(others_profile):
                     utility += relevant_payoffs[thetuple] * theprob
                 utility = Fraction(utility).limit_denominator()
-                print('player', ii, 'action', jj, 'utility', utility, 'in_support', in_support)
+                if self.verbose:
+                    print('player', player, 'action', jj, 'utility', utility, 'in_support', in_support)
+                is_nash = True
                 if in_support:
                     if nonsupport_utility is not None and nonsupport_utility > utility:
-                        return False
+                        is_nash = False
                     if support_utility is None:
                         support_utility = utility
                     elif support_utility != utility:
-                         return False
+                         is_nash = False
                 else:
                     if support_utility is not None and utility > support_utility:
-                        return False
+                        is_nash = False
                     if nonsupport_utility is None or utility > nonsupport_utility:
-                        nonsupport_utility = utility 
-        return True
+                        nonsupport_utility = utility
+                if not is_nash:
+                     if self.verbose:
+                        print('rejected utility', utility, 'support_utility', support_utility,  'nonsupport_utility', nonsupport_utility)
+                     return False
+                
+        return is_nash
+
+    def num_actions(self, player):
+        """Return the number of available actions for the player with given index. Returns an int."""
+        return self.payoffs.shape[player]
+
+    def find_pure(self):
+        """Find any pure nash equilibria for this game. Returns a list of lists, one entry per equilibrium found. Inner list is the actions for each player."""
+        # Iterate though the list of pure stretegies, check if it is a nash equilibrium
+        eq = []
+        shape = self.payoffs.shape[:-1]
+        for indices in iterindices(shape):
+             # convert indices into an action profile playing the pure actions at that index
+             profile = [0] * len(shape)
+             for player, action in enumerate(indices):
+                 profile[player] = [0] * self.num_actions(player)
+                 profile[player][action] = 1
+             is_nash = self.is_nash(profile)
+             print('profile', profile, 'is_nash', is_nash)
+             if is_nash:
+                 eq.append(indices)
+        return eq
         
     
 

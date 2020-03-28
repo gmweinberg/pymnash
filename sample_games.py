@@ -81,17 +81,43 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--players', type=int, default=3)
     parser.add_argument('--game', default='battle_of_genders')
+    parser.add_argument('--pure', action='store_true', help='find pure strategy equilibria')
+    parser.add_argument('--payoffs', help='show payoff matrix', action='store_true')
+    parser.add_argument('--profile', help='test if profile is equilibrium', action='store_true')
+    parser.add_argument('--verbose', action='store_true')
     args = parser.parse_args()
     agame = None
-    if args.game == 'matching_pennies':
+    profile = None
+    if 'matching_pennies'.find(args.game) == 0:
         agame = matching_pennies(args.players)
         # for a test we will have 2 players randomize and everyone else will play pure strategies 
         frac = Fraction(1, args.players)
-        profile = [[frac] * args.players, [frac] * args.players] + [[1] + [0] * (args.players - 1)] * (args.players - 2) # python 2 not supported!
-        print('profile', profile)
-    # print(agame.payoffs)
-    print(agame.is_nash(profile))
+        # profile = [[frac] * args.players, [frac] * args.players] + [[1] + [0] * (args.players - 1)] * (args.players - 2) # python 2 not supported!
+        profile = [[1] + [0 * (args.players - 1)]] * (args.players)
+    elif 'battle_of_genders'.find(args.game) == 0:
+        agame = battle_of_genders(args.players)
+        #profile = [[1] + [0 * (args.players - 1)]] * (args.players)
+        profile = [[0, 1, 0], [1, 0, 0], [1, 0, 0]]
+    if agame is None:
+        print('unknown game')
+        exit()
+    agame.verbose = args.verbose
+    
+    if args.payoffs:
+        print('payoffs:')
+        print(repr(agame.payoffs))
+    if args.pure:
+        print('pure:')
+        print(repr(agame.find_pure()))
+    if args.profile:
+        print('profile:')
+        print(profile)
+        is_nash = agame.is_nash(profile)
+        print('is_nash:', is_nash)
+        
 
+    # print(agame.payoffs)
+    # print(agame.is_nash(profile))
     #prisoners_dilemma(2)
     print()
 

@@ -17,7 +17,7 @@ def iterprob(actions):
         which player performed which action."""
     pos = [0] * len(actions)
     done = False
-    while(not done):
+    while not done:
         pospos = 0
         while pos[pospos] == len(actions[pospos]) - 1:
             pospos += 1
@@ -35,6 +35,24 @@ def iterprob(actions):
                 pos[ii] = 0
         # print('oldpos', oldpos, 'prob', prob)
         yield (oldpos, prob)
+
+def iterindices(shape):
+    """Iterate over possible indices given a shape tuple"""
+    pos = [0] * len(shape)
+    done = False
+    while not done:
+        pospos = 0
+        while pos[pospos] == shape[pospos] - 1:
+            pospos += 1
+            if pospos == len(shape):
+                done = True
+                break
+        oldpos = tuple(pos)
+        if not done:
+            pos[pospos] += 1
+            for ii in range(pospos):
+                pos[ii] = 0
+        yield oldpos
 
 
 def silly(pos):
