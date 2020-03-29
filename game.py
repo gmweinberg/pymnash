@@ -33,9 +33,19 @@ class Game(object):
             self.action_labels = list(action_labels)
             for ii in range(action_count - len(action_labels)):
                 self.action_labels.append(str(ii + len(action_labels)))
+        self._wiggle = 0.000001
 
     def __repr__(self):
          return 'payoffs {}\nplayer_labels {}\naction_labels {}'.format(self.payoffs, self.player_labels, self.action_labels)
+
+    def eq(self, val1, val2):
+        """Check whether val1 and val2 are 'close enough' to count as equal."""
+        return val1 + self._wiggle > val2 and val2 + self._wiggle > val1
+
+    def gt(self, val1, val2):
+        """Check whether val1 > val2, giving ourselves a little 'wiggle room' for rounding errors."""
+        return val1 > val22 + self._wiggle
+       
 
     def is_nash(self, profile):
         """Check if the supplied strategy profile is a nash equilibrium. Profile is a list of lists, each list is strategy profile for one player.
@@ -44,7 +54,6 @@ class Game(object):
         # (suppport is actions played with non-zero probability)
         # also, a player must not be able to do better by playing an action not in his suport.
         # of course, no probability can be negative and all probabilities must sum to 1.
-        # I am using the Fractions class to test that the sums of floats are equal. We may have to change this.
         is_nash = True
         shape = self.payoffs.shape
         for player, player_profile in enumerate(profile):
@@ -54,8 +63,10 @@ class Game(object):
             for prob in player_profile:
                 if prob < 0:
                     raise Exception('negative probability')
-                prob_sum += Fraction(prob).limit_denominator()
-            if prob_sum != 1:
+                prob_sum += prob
+            if not self.eq(prob_sum, 1):
+                if self.verbose:
+                    print('prob_sum', prob_sum)
                 raise Exception('probabilities do not sum to 1')
             others_profile = deepcopy(profile)
             del others_profile[player]
@@ -77,19 +88,19 @@ class Game(object):
                 utility = 0
                 for (thetuple, theprob) in iterprob(others_profile):
                     utility += relevant_payoffs[thetuple] * theprob
-                utility = Fraction(utility).limit_denominator()
+                # utility = Fraction(utility).limit_denominator() # Fractions are not great for more than 2 players
                 if self.verbose:
                     print('player', player, 'action', jj, 'utility', utility, 'in_support', in_support)
                 is_nash = True
                 if in_support:
-                    if nonsupport_utility is not None and nonsupport_utility > utility:
+                    if nonsupport_utility is not None and self.gt(nonsupport_utility, utility):
                         is_nash = False
                     if support_utility is None:
                         support_utility = utility
-                    elif support_utility != utility:
+                    elif not self.eq(support_utility, utility):
                          is_nash = False
                 else:
-                    if support_utility is not None and utility > support_utility:
+                    if support_utility is not None and self.gt(utility, support_utility):
                         is_nash = False
                     if nonsupport_utility is None or utility > nonsupport_utility:
                         nonsupport_utility = utility

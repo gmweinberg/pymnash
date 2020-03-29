@@ -4,7 +4,7 @@ import argparse
 
 from fractions import Fraction
 from game import Game
-from util import coords_from_pos
+from util import coords_from_pos, iterindices
 
 """Process some test games to verify we can find their equilibria."""
 prisoner_labels = ['capone', 'number6', 'hogan']
@@ -28,6 +28,26 @@ def battle_of_genders(n):
             else:
                  loc[kk] = 1
     return Game(boga)
+
+def dunderheads(n):
+    """A sample game similar to battle of genders, except there are only two options and all players have the same preferrred option."""
+    # There are two pure nash equilibria, the 'smart' on where evryone picks the preferred option, and the 'dunderheaded' one where everyone
+    # pick the option they don't like. There should also be a 'super-dunderheaded' version where all players mix their picks."""
+    thearray = np.zeros(tuple([2] * n + [3]), dtype=float)
+    for indices in iterindices(thearray.shape):
+        good = True # everyone is playing the good choice
+        bad = True
+        for ii in range(len(indices) - 1):
+            if indices[ii] == 1: #someone is playing the bad choice
+                good = False
+            elif indices[ii] == 0:
+                bad = False
+        if good:
+            thearray[indices] = 3.0
+        if bad:
+            thearray[indices] = 1.0
+    return Game(thearray)
+        
 
 
 def prisoners_dilemma(n):
@@ -55,7 +75,6 @@ def prisoners_dilemma(n):
     return Game(thearray, prisoner_labels)
 
 
-
 def matching_pennies(n):
     """For n player matching pennies each player can choose a number in the range 0 to n -1, and player m wins if the result is m modulo n.
        For the 2 x 2 case think of heads as zero and tails as 1, so player 0 wins with HH or TT, player 1 wins with HT or TH"""
@@ -73,7 +92,6 @@ def matching_pennies(n):
             thearray[coords] = -1
     #print(thearray)
     return Game(thearray)
-    
 
 
 
@@ -98,6 +116,10 @@ if __name__ == '__main__':
         agame = battle_of_genders(args.players)
         #profile = [[1] + [0 * (args.players - 1)]] * (args.players)
         profile = [[0, 1, 0], [1, 0, 0], [1, 0, 0]]
+    elif 'dunder'.find(args.game) == 0:
+        agame = dunderheads(args.players)
+        aroot = 3.0 ** (1/(args.players - 1.0))
+        profile = [[1 / (aroot + 1), aroot/(aroot + 1)]] * args.players
     if agame is None:
         print('unknown game')
         exit()

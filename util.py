@@ -3,6 +3,7 @@ from fractions import Fraction
 
 def coords_from_pos(thearray, pos):
     """Get the corrdinates from a one-dimensional position and shape. We will make the first index most signifcant."""
+    # we should probably replace this with iterindices where it is used.
     coords = []
     for ii in range(len(thearray.shape) - 1):
         prod = numpy.prod(thearray.shape[1 + ii:])
@@ -37,7 +38,7 @@ def iterprob(actions):
         yield (oldpos, prob)
 
 def iterindices(shape):
-    """Iterate over possible indices given a shape tuple"""
+    """Iterate over possible indices given a shape tuple."""
     pos = [0] * len(shape)
     done = False
     while not done:
