@@ -29,12 +29,29 @@ def battle_of_genders(n):
                  loc[kk] = 1
     return Game(boga)
 
+def reducible(n):
+    """A game just to test the iterated elimination of sttrictly dominated strategies. """
+    # 2 player version scored come from steven tadelis game theory an introduction. I will extend it with obvious dominant strategies of rother players.
+    twoplayer = [[[4,3], [5,1], [6,2]],
+                 [[2,1], [8,4], [3,6]],
+                 [[3,0], [9,6], [2,8]]]
+    thetuple = tuple([3, 3] + [2] * (n - 2) +  [n])
+    payoffs = np.zeros(thetuple)
+    for indices in iterindices(payoffs.shape):
+        player = indices[len(indices) - 1]
+        if player in [0, 1]:
+             payoffs[indices] = twoplayer[indices[0]][indices[1]][player]
+        elif indices[player] == 0:
+             payoffs[indices] = 1
+    return Game(payoffs)
+    
+
 def dunderheads(n):
     """A sample game similar to battle of genders, except there are only two options and all players have the same preferrred option."""
     # There are two pure nash equilibria, the 'smart' on where evryone picks the preferred option, and the 'dunderheaded' one where everyone
     # pick the option they don't like. There should also be a 'super-dunderheaded' version where all players mix their picks."""
-    thearray = np.zeros(tuple([2] * n + [3]), dtype=float)
-    for indices in iterindices(thearray.shape):
+    payoffs = np.zeros(tuple([2] * n + [3]), dtype=float)
+    for indices in iterindices(payoffs.shape):
         good = True # everyone is playing the good choice
         bad = True
         for ii in range(len(indices) - 1):
@@ -43,10 +60,10 @@ def dunderheads(n):
             elif indices[ii] == 0:
                 bad = False
         if good:
-            thearray[indices] = 3.0
+            payoffs[indices] = 3.0
         if bad:
-            thearray[indices] = 1.0
-    return Game(thearray)
+            payoffs[indices] = 1.0
+    return Game(payoffs)
         
 
 
@@ -58,21 +75,21 @@ def prisoners_dilemma(n):
     # We will say for ever player choice '0' is cooperate and '1' is defect.
     # The innermost array is player id for payoffs
     # We know the only nash equilibrium is everybody defects.
-    thearray = np.zeros(tuple(([2] * n + [n])), dtype=float)
-    for ii in range(np.prod(thearray.shape)):
-        coords = coords_from_pos(thearray, ii)
+    payoffs = np.zeros(tuple(([2] * n + [n])), dtype=float)
+    for ii in range(np.prod(payoffs.shape)):
+        coords = coords_from_pos(payoffs, ii)
         player = coords[ n ] # index of the player we are looking at 
         he_defected = bool(coords[player])
         total_defected = sum(coords[:-1])
         if total_defected == 0:
-            thearray[coords] = -1
+            payoffs[coords] = -1
         elif he_defected and total_defected  == 1:
-            thearray[coords] = 0
+            payoffs[coords] = 0
         elif he_defected:
-             thearray[coords] = -3
+             payoffs[coords] = -3
         else:
-             thearray[coords] = -5
-    return Game(thearray, prisoner_labels)
+             payoffs[coords] = -5
+    return Game(payoffs, prisoner_labels)
 
 
 def matching_pennies(n):
@@ -81,17 +98,17 @@ def matching_pennies(n):
     # The obvious equilibrium is everyone plays randomly. But there are many possibilities for multiple players. In the 3 player version, if 2 players
     # play randomly, the other player can play anything and it's still an equilibrium. As long as at least one player is playing randomly it doesn't really matter what the
     # other players do, but just one player randomising would not be an equilibrium.
-    thearray = np.zeros(tuple([n] * (n + 1)), dtype=float)
-    for ii in range(np.prod(thearray.shape)):
-        coords = coords_from_pos(thearray, ii)
+    payoffs = np.zeros(tuple([n] * (n + 1)), dtype=float)
+    for ii in range(np.prod(payoffs.shape)):
+        coords = coords_from_pos(payoffs, ii)
         player = coords[ n ] # index of the player we are looking at
         sum_played = sum(coords[:-1])
         if sum_played % n == player:
-            thearray[coords] = n - 1
+            payoffs[coords] = n - 1
         else:
-            thearray[coords] = -1
-    #print(thearray)
-    return Game(thearray)
+            payoffs[coords] = -1
+    #print(payoffs)
+    return Game(payoffs)
 
 
 
@@ -103,6 +120,7 @@ if __name__ == '__main__':
     parser.add_argument('--payoffs', help='show payoff matrix', action='store_true')
     parser.add_argument('--profile', help='test if profile is equilibrium', action='store_true')
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--iesds', action='store_true')
     args = parser.parse_args()
     agame = None
     profile = None
@@ -120,6 +138,9 @@ if __name__ == '__main__':
         agame = dunderheads(args.players)
         aroot = 3.0 ** (1/(args.players - 1.0))
         profile = [[1 / (aroot + 1), aroot/(aroot + 1)]] * args.players
+    elif 'reducible'.find(args.game) == 0:
+        agame = reducible(args.players)
+        profile = [[1, 0, 0]] * 2 +  [[1, 0]] * (args.players - 2)
     if agame is None:
         print('unknown game')
         exit()
@@ -136,6 +157,9 @@ if __name__ == '__main__':
         print(profile)
         is_nash = agame.is_nash(profile)
         print('is_nash:', is_nash)
+    if args.iesds:
+        print('dominated strategies:')
+        print(agame.iesds1())
         
 
     # print(agame.payoffs)

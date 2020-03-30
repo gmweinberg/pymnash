@@ -1,4 +1,5 @@
 """A class for a multi-player normal form game"""
+import pdb
 from copy import deepcopy
 import numpy as np
 from fractions import Fraction
@@ -44,7 +45,7 @@ class Game(object):
 
     def gt(self, val1, val2):
         """Check whether val1 > val2, giving ourselves a little 'wiggle room' for rounding errors."""
-        return val1 > val22 + self._wiggle
+        return val1 > val2 + self._wiggle
        
 
     def is_nash(self, profile):
@@ -115,6 +116,11 @@ class Game(object):
         """Return the number of available actions for the player with given index. Returns an int."""
         return self.payoffs.shape[player]
 
+    def num_players(self):
+        """Return the number of players for this game"""
+        return len(self.payoffs.shape) - 1
+
+
     def find_pure(self):
         """Find any pure nash equilibria for this game. Returns a list of lists, one entry per equilibrium found. Inner list is the actions for each player."""
         # Iterate though the list of pure stretegies, check if it is a nash equilibrium
@@ -131,11 +137,64 @@ class Game(object):
              if is_nash:
                  eq.append(indices)
         return eq
-        
-    
 
 
     def iesds(self):
         """Perform iteratated elimination of strictly dominated strategies to get a reduced game."""
         pass
+
+
+    def iesds1(self):
+        """Perform iteratated elimination of strictly dominated strategies to get a reduced game, considering stratgies dominated by a  single other strategy"""
+        num_players = self.num_players()
+        progress = True
+        dominated = [[] for ii in range(num_players)] # [[]]] * num_players makes all inner lsist the same list instead of separate ists with same value
+        while progress:
+            progress = False
+            for player in range(num_players):
+                for action0 in range(self.payoffs.shape[player]):
+                    if action0 in dominated[player]:
+                         continue
+                    aslice = [slice(None)] * len(self.payoffs.shape)
+                    aslice[-1] = player
+                    aslice[player] = action0
+                    action0_payoffs = self.payoffs[tuple(aslice)]
+                    for action1 in range(self.payoffs.shape[player]):
+                        skip = False
+                        if action1 in dominated[player]:
+                            skip = True
+                            continue
+                        if action0 == action1:
+                            skip = True
+                            continue
+                        aslice = [slice(None)] * len(self.payoffs.shape)
+                        aslice[-1] = player
+                        aslice[player] = action1
+                        action1_payoffs = self.payoffs[tuple(aslice)]
+                        adominated = True
+                        for indices in iterindices(action0_payoffs.shape):
+                            skip2 = False
+                            for ii, index in enumerate(indices):
+                                inner_player = ii
+                                if inner_player >= player:
+                                    inner_player += 1
+                                if index in dominated[inner_player]:
+                                    skip2 = True
+                                    break
+                            if skip2:
+                                 continue
+                            ut0 = action0_payoffs[indices]
+                            ut1 = action1_payoffs[indices]
+                            if not self.gt(ut0, ut1):
+                                adominated = False
+                                if self.verbose:
+                                    pass
+                                    # print('player', player, 'action0', action0, 'action1', action1, 'u0', ut0, 'u1', ut1)
+                                break
+                        if (not skip) and adominated:
+                             dominated[player].append(action1)
+                             progress = True
+                             if self.verbose:
+                                  print('player', player, 'action', action1, 'dominated by', action0)
+        return dominated
 
