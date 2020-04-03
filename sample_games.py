@@ -30,7 +30,7 @@ def battle_of_genders(n):
     return Game(boga)
 
 def reducible(n):
-    """A game just to test the iterated elimination of sttrictly dominated strategies. """
+    """A game just to test the iterated elimination of strictly dominated strategies. """
     # 2 player version scored come from steven tadelis game theory an introduction. I will extend it with obvious dominant strategies of rother players.
     twoplayer = [[[4,3], [5,1], [6,2]],
                  [[2,1], [8,4], [3,6]],
@@ -44,6 +44,18 @@ def reducible(n):
         elif indices[player] == 0:
              payoffs[indices] = 1
     return Game(payoffs)
+
+def combo_reducible(n):
+    """A game for testing iesds2. It has a strategy that is not dominated by any singe other strategy but can be dominated by a linear combination of strategies."""
+    # The game comes from steven tadelis game theory an introduction, page 115 of first edition.
+    if n != 2:
+        raise Exception('This game is only supported for two players')
+    payoffs = [[[5, 1], [1,4], [1, 0]],
+               [[3,2], [0, 0], [3, 5]],
+               [[4,3], [4,4], [0,3]]]
+    payoffs = np.array(payoffs)
+    return Game(payoffs)
+     
     
 
 def dunderheads(n):
@@ -121,6 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('--profile', help='test if profile is equilibrium', action='store_true')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--iesds', action='store_true')
+    parser.add_argument('--combo', action='store_true', help='check if a combo of strategies dominates a strategy')
     args = parser.parse_args()
     agame = None
     profile = None
@@ -141,6 +154,12 @@ if __name__ == '__main__':
     elif 'reducible'.find(args.game) == 0:
         agame = reducible(args.players)
         profile = [[1, 0, 0]] * 2 +  [[1, 0]] * (args.players - 2)
+    elif 'combo_reducible'.find(args.game) == 0:
+        agame = combo_reducible(args.players)
+        #profile = whatever
+    elif 'prisoners_dilemma'.find(args.game) == 0:
+        agame = prisoners_dilemma(args.players)
+        #profile = whatever
     if agame is None:
         print('unknown game')
         exit()
@@ -158,8 +177,11 @@ if __name__ == '__main__':
         is_nash = agame.is_nash(profile)
         print('is_nash:', is_nash)
     if args.iesds:
+        agame.iesds()
         print('dominated strategies:')
-        print(agame.iesds1())
+        print(agame.dominated)
+    if args.combo:
+        print(agame._combo_dominates(1, 0, 1, 2))
         
 
     # print(agame.payoffs)
