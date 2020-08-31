@@ -2,8 +2,11 @@
 import pdb
 from copy import deepcopy
 import numpy as np
+from sympy import symbols
+from sympy.core import expr
+from sympy.solvers import solve
 from fractions import Fraction
-from util import iterprob, iterindices
+from util import iterprob, iterindices, itersymbol
 
 class Game(object):
     """ A class for a multi-player normal form game."""
@@ -292,8 +295,63 @@ class Game(object):
                         return False
         if self.verbose:
             print("player", player, "strategy", strat_a, "dominated by ", strat_b, strat_c, min_p, max_p)
-        return True 
+        return True
         
-        
+    def _get_indifference_probs(self, support):
+        """Find the combinations of probabilities such that each player is indifferent to which action in his own support which he plays given the probabilities of the other players.
+          Support is a list of lists, players and actions. Each player could have any number of actions, no reason they would be equal."""
+        support_symbols = [] # list of lists. Value is a tuple (player_action (int), symbol)
+        symbols_list = [] # put all symbols in one list for solver
+        for player in range(len(support)):
+            support_symbols.append([])
+            for action in support[player]:
+                name = 'prob_{}_{}'.format(player, action)
+                asymbol = symbols(name)
+                support_symbols[player].append((action, asymbol))
+                symbols_list.append(asymbol)
+        symbol_type = type(symbols_list[0])
 
+        # print(repr(support_symbols))
+        # probabilities for each player action must equal one
+        psums = [] # list of probability sum equations
+        for player in range(len(support)):
+            eq = -1
+            for action in support_symbols[player]:
+                eq += action[1]
+            psums.append(eq)
+        #print(repr(psums))
+        indiff_equations = []
+        for player in  range(len(support_symbols)):
+            if len(support_symbols[player]) == 1: # player is sticking with 1 strategy, no indifference for him
+                continue
+            ppayoffs = [] # each element is the expected payoff to the chosen player for the chosen action
+            old_ss = support_symbols[player]
+            for player_action in support[player]:
+                support_symbols[player] = [(player_action, 1)]
+                apayoff = 0
+                for acombo in itersymbol(support_symbols):
+                    combo_actions = acombo[0]
+                    apayoff += self.payoffs[(combo_actions)][player] * acombo[1]
+                ppayoffs.append(apayoff)
+            for payoff_index in range(1, len(ppayoffs)):
+                an_equality = ppayoffs[0] - ppayoffs[payoff_index]
+                indiff_equations.append(an_equality)
+            support_symbols[player] = old_ss
+        all_equations = psums + indiff_equations
+        initial_solutions = solve(all_equations, symbols_list)
+        print(initial_solutions)
+        real_solutions = []
+        for asolution in initial_solutions:
+            ok = True
+            try:
+                for val in asolution:
+                    if type(val) != symbol_type and (val > 1 or val < 0):
+                        ok = False
+                        break
+            except Exception:
+                ok = False
+                break
+            if ok:
+                real_solutions.append(asolution)
+        print(real_solutions)
 

@@ -2,6 +2,7 @@
 import numpy as np
 import argparse
 
+import json
 from fractions import Fraction
 from game import Game
 from util import coords_from_pos, iterindices
@@ -31,7 +32,7 @@ def battle_of_genders(n):
 
 def reducible(n):
     """A game just to test the iterated elimination of strictly dominated strategies. """
-    # 2 player version scored come from steven tadelis game theory an introduction. I will extend it with obvious dominant strategies of rother players.
+    # 2 player version scored come from steven tadelis game theory an introduction. I will extend it with obvious dominant strategies of other players.
     twoplayer = [[[4,3], [5,1], [6,2]],
                  [[2,1], [8,4], [3,6]],
                  [[3,0], [9,6], [2,8]]]
@@ -46,7 +47,7 @@ def reducible(n):
     return Game(payoffs)
 
 def combo_reducible(n):
-    """A game for testing iesds2. It has a strategy that is not dominated by any singe other strategy but can be dominated by a linear combination of strategies."""
+    """A game for testing iesds2. It has a strategy that is not dominated by any single other strategy but can be dominated by a linear combination of strategies."""
     # The game comes from steven tadelis game theory an introduction, page 115 of first edition.
     if n != 2:
         raise Exception('This game is only supported for two players')
@@ -134,6 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--iesds', action='store_true')
     parser.add_argument('--combo', action='store_true', help='check if a combo of strategies dominates a strategy')
+    parser.add_argument('--support', help='try to find nash equilibria with the given support', default = None)
     args = parser.parse_args()
     agame = None
     profile = None
@@ -168,6 +170,8 @@ if __name__ == '__main__':
     if args.payoffs:
         print('payoffs:')
         print(repr(agame.payoffs))
+        print('')
+        print(repr(agame.payoffs[(0,0,0)][1]))
     if args.pure:
         print('pure:')
         print(repr(agame.find_pure()))
@@ -182,6 +186,9 @@ if __name__ == '__main__':
         print(agame.dominated)
     if args.combo:
         print(agame._combo_dominates(1, 0, 1, 2))
+    if args.support:
+        support = json.loads(args.support)
+        agame._get_indifference_probs(support)
         
 
     # print(agame.payoffs)
@@ -194,4 +201,5 @@ if __name__ == '__main__':
 
     #print(repr(matching_pennies(3)))
 
-
+#./sample_games.py --support "[[0,1,2], [0,1,2], [0,1,2]]"
+#./sample_games.py --support "[[1,2], [1,2], [1,2]]"
