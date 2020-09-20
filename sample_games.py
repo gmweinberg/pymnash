@@ -136,6 +136,7 @@ if __name__ == '__main__':
     parser.add_argument('--iesds', action='store_true')
     parser.add_argument('--combo', action='store_true', help='check if a combo of strategies dominates a strategy')
     parser.add_argument('--support', help='try to find nash equilibria with the given support', default = None)
+    parser.add_argument('--all', help='try to find all nash equilibria for this game', action='store_true')
     args = parser.parse_args()
     agame = None
     profile = None
@@ -189,6 +190,12 @@ if __name__ == '__main__':
     if args.support:
         support = json.loads(args.support)
         agame._get_indifference_probs(support)
+    if args.all:
+        all_nash = agame.find_all_equilibria()
+        for anash in all_nash:
+            pass
+            print(anash)
+        #print(all_nash)
         
 
     # print(agame.payoffs)
@@ -201,5 +208,7 @@ if __name__ == '__main__':
 
     #print(repr(matching_pennies(3)))
 
-#./sample_games.py --support "[[0,1,2], [0,1,2], [0,1,2]]"
+#./sample_games.py --support "[[0,1,2], [0,1,2], [0,1,2]]" # this will give unique probs
 #./sample_games.py --support "[[1,2], [1,2], [1,2]]"
+#./sample_games.py --players 4 --support "[[1,2], [1,2], [0,3], [0, 3]]" # this should give lines of solutions.
+

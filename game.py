@@ -1,12 +1,15 @@
 """A class for a multi-player normal form game"""
-import pdb
+import traceback
 from copy import deepcopy
 import numpy as np
 from sympy import symbols
 from sympy.core import expr
 from sympy.solvers import solve
+from sympy.core.expr import Expr
+from sympy.core import Number
+
 from fractions import Fraction
-from util import iterprob, iterindices, itersymbol
+from util import iterprob, iterindices, itersymbol, iter_subset_combos, is_pure
 
 class Game(object):
     """ A class for a multi-player normal form game."""
@@ -19,7 +22,8 @@ class Game(object):
         if type(payoffs) != np.ndarray:
             raise Exception('Payoffs must be numpy array')
         self.payoffs = payoffs
-        player_count = payoffs.shape[len(payoffs.shape) - 1]
+        self.player_count = self.num_players()
+        player_count = self.player_count
         if player_labels is None:
             self.player_labels =  [str(ii) for ii in range(player_count)]
         elif len(player_labels) >= player_count:
@@ -299,7 +303,8 @@ class Game(object):
         
     def _get_indifference_probs(self, support):
         """Find the combinations of probabilities such that each player is indifferent to which action in his own support which he plays given the probabilities of the other players.
-          Support is a list of lists, players and actions. Each player could have any number of actions, no reason they would be equal."""
+          Support is a list of lists, players and actions. Each player could have any number of actions, the number of possible actions  will vary by player.
+          Returns a list of dicts."""
         support_symbols = [] # list of lists. Value is a tuple (player_action (int), symbol)
         symbols_list = [] # put all symbols in one list for solver
         for player in range(len(support)):
@@ -338,20 +343,96 @@ class Game(object):
                 indiff_equations.append(an_equality)
             support_symbols[player] = old_ss
         all_equations = psums + indiff_equations
-        initial_solutions = solve(all_equations, symbols_list)
-        print(initial_solutions)
+        try:
+             initial_solutions = solve(all_equations, symbols_list)
+        except Exception:
+             # This means there are no solutions with the given support
+             #print("sympy threw an exception, here the equations ans symbols", all_equations, symbols_list)
+             return []
+        if type(initial_solutions) == dict:
+            support_result = self._sympy_dict_to_support(initial_solutions)
+            #print(" a dict?? WFTT???")
+            #print([initial_solutions])
+            print(support_result)
+            return  support_result
         real_solutions = []
         for asolution in initial_solutions:
+            support_result = [ {} for ii in range(self.player_count)]
             ok = True
-            try:
-                for val in asolution:
-                    if type(val) != symbol_type and (val > 1 or val < 0):
+            for val in asolution:
+                try:
+                    if type(val) != symbol_type and val > 1 or val <= 0: 
                         ok = False
                         break
-            except Exception:
-                ok = False
-                break
+                        
+                except Exception:
+                    pass # can't compare symbol with number, carry on
             if ok:
-                real_solutions.append(asolution)
-        print(real_solutions)
+                sd = {}
+                for ii, elm in enumerate(symbols_list):
+                    name = str(elm)
+                    pieces = name.split('_')
+                    player = int(pieces[1])
+                    action = int(pieces[2])
+                    support_result[player][action] = asolution[ii]
+                real_solutions.append(support_result)
+        for asolution in real_solutions:
+            print(asolution)
+        return real_solutions
+        
+    def _sympy_dict_to_support(self, sd):
+        """Given a sympy dictionary indicating solutions to indifference equations, return a support structure."""
+        #The probabilities in the supoort here might be a number or an expression
+        support = [ {} for ii in range(self.player_count)]
+        
+        for elm in sd.keys():
+            name = str(elm)
+            pieces = name.split('_')
+            player = int(pieces[1])
+            action = int(pieces[2])
+            support[player][action] = sd[elm]
+        return support
+        
+    def _carnate_support(self, support):
+        """Given a support dict which may contain sympy expressions as values, return a suport with float values."""
+        # We need this to evaluate the payoff to a player of a given strategy profile. I think it's okay when we have an equation to
+        # just arbitrarily pick a value e.g. if player 0 can play actions 0 or 1 with any probabilitie sthat add up to 1, we'll just
+        # pretend he always picks action 0
+        support_result = [{} for ii in range(self.player_count)]
+        for player_index, player_actions in enumerate(support):
+            for action in player_actions:
+                action_prob = player_actions[action]
+                if isinstance(action_prob, Number):
+                    support_result[player_index][action] = float(action_prob)
+                elif isinstance(action_prob, Expr):
+                    support_result[player_index] = {action:1}
+                    continue
+                else:
+                    support_result[player_index][action] = float(action_prob)
+        return support_result
+              
+        
+   
+    def find_all_equilibria(self):
+        """Attempt to find all nash equilibria for a game. Returns a list of dictts, keys are symbols, values are probabilities (numbers or symbols."""
+        result = []
+        action_shape = self.payoffs.shape[:-1]
+        possible_actions = [list(range(player_actions)) for player_actions in action_shape]
+        #print(possible_actions)
+        # we should first eliminate dominated strategies. we will skip that step for now
+        for acombo in iter_subset_combos(possible_actions):
+           if is_pure(acombo):
+               pass # for now
+           else:
+               #print("checking combo", acombo)
+               combo_solutions = self._get_indifference_probs(acombo)
+               result.extend(combo_solutions)
+               #print(combo_solutions)
+               #print("")
+        return result
+           
+           
+       
+       
+       
 

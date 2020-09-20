@@ -1,5 +1,6 @@
 import numpy
 from fractions import Fraction
+from itertools import combinations
 
 def coords_from_pos(thearray, pos):
     """Get the corrdinates from a one-dimensional position and shape. We will make the first index most signifcant."""
@@ -82,14 +83,48 @@ def iterindices(shape):
                 pos[ii] = 0
         yield oldpos
         
-def sum_payoffs(payoffs, actions, player):
-    """Find the total payoff for the give player given the payoffs and actions."""
-    # payoffs is a tensor with one axis for each player + one more for the payoffs list.
-    # the length of each axis is the number of actions for the corresponding player
-    # Actions are a dict of dicts, outer dict key is player, inner dict key is action for that player, value is probability.
-    # probability may be a number or a sympy symbol
-    # player is just a number
-    pass
+def subsets(aset):
+   """Yield all subsets of an iterable (except the empty set)"""
+   for alen in range(1, len(aset) + 1):
+       for acombo in combinations(aset, alen):
+           yield(acombo)
+        
+def iter_subset_combos(actions):
+    """Generator to find combinations of subsets of a list of lists.
+       Yields a list of lists."""
+    pos = [0] * len(actions)
+    action_subsets = []
+    for i in range(len(actions)):
+        #print(i, actions[i], list(subsets(actions[i])))
+        action_subsets.append(list(subsets(actions[i]))) 
+    done = False
+    while not done:
+        pospos = 0
+        while pos[pospos] == len(action_subsets[pospos]) - 1:
+            pospos += 1
+            if pospos == len(actions):
+                done = True
+                break
+        prob = 1
+        sslist = []
+        for ii in range(len(actions)):
+            # print(ii, symbol_actions[ii][pos[ii]])
+            sslist.append( action_subsets[ii][pos[ii]])
+        # print(pos, pospos)
+        if not done:
+            pos[pospos] += 1
+            for ii in range(pospos):
+                pos[ii] = 0
+        # print('oldpos', oldpos, 'prob', prob)
+        yield sslist
+        
+def is_pure(profile):
+    """Is the profile (list of lists) pure (each player is playing exactly one stratgy)? Returns a boolean."""
+    for elm in profile:
+        if len(elm) != 1:
+            return False
+    return True
+
     
     
 
