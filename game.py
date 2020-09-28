@@ -9,7 +9,7 @@ from sympy.core.expr import Expr
 from sympy.core import Number
 
 from fractions import Fraction
-from util import iterprob, iterindices, itersymbol, iter_subset_combos, is_pure
+from util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
 
 class Game(object):
     """ A class for a multi-player normal form game."""
@@ -54,7 +54,34 @@ class Game(object):
     def gt(self, val1, val2):
         """Check whether val1 > val2, giving ourselves a little 'wiggle room' for rounding errors."""
         return val1 > val2 + self._wiggle
-       
+
+    def get_profile_payoffs(self, profile):
+        """Find all player payoffs given the strategy profile. Returns a list of floats."""
+        payoffs = [0] * self.player_count
+        for acombo in itersupport(profile):
+            combo_actions = acombo[0]
+            for player in range(self.player_count):
+                payoffs[player] += self.payoffs[(combo_actions)][player] * acombo[1]
+        return payoffs
+ 
+    def is_dominated(self, profile, profile_payoffs=None):
+        """Check if there exists a pure stratgey for at least one player which gives that player a payoff than the specified profile."""
+        if profile_payoffs is None:
+            profile_payoffs = self.get_profile_payoffs(profile)
+        for player in range(self.player_count):
+            old_player_profile = profile[player]
+            for anaction in range(len(self.payoffs[player])):
+                action_payoff = 0
+                profile[player] = [[anaction, 1]]
+                for acombo in itersupport(profile):
+                    combo_actions = acombo[0]
+                    action_payoff +=  self.payoffs[(combo_actions)][player] * acombo[1]
+                profile[player] = old_player_profile
+                if action_payoff > profile_payoffs[player] + self._wiggle:
+                    if self.verbose:
+                        print("is_dominated profile {} is dominated for player {} by pure strategy {}".format(profile, player, anaction))
+                    return True
+        return False
 
     def is_nash(self, profile):
         """Check if the supplied strategy profile is a nash equilibrium. Profile is a list of lists, each list is strategy profile for one player.
@@ -334,7 +361,7 @@ class Game(object):
             for player_action in support[player]:
                 support_symbols[player] = [(player_action, 1)]
                 apayoff = 0
-                for acombo in itersymbol(support_symbols):
+                for acombo in itersupport(support_symbols):
                     combo_actions = acombo[0]
                     apayoff += self.payoffs[(combo_actions)][player] * acombo[1]
                 ppayoffs.append(apayoff)
@@ -353,8 +380,8 @@ class Game(object):
             support_result = self._sympy_dict_to_support(initial_solutions)
             #print(" a dict?? WFTT???")
             #print([initial_solutions])
-            print(support_result)
-            return  support_result
+            #print(support_result)
+            return  [support_result]
         real_solutions = []
         for asolution in initial_solutions:
             support_result = [ {} for ii in range(self.player_count)]
@@ -376,8 +403,8 @@ class Game(object):
                     action = int(pieces[2])
                     support_result[player][action] = asolution[ii]
                 real_solutions.append(support_result)
-        for asolution in real_solutions:
-            print(asolution)
+        #for asolution in real_solutions:
+        #    print(asolution)
         return real_solutions
         
     def _sympy_dict_to_support(self, sd):
@@ -414,7 +441,7 @@ class Game(object):
         
    
     def find_all_equilibria(self):
-        """Attempt to find all nash equilibria for a game. Returns a list of dictts, keys are symbols, values are probabilities (numbers or symbols."""
+        """Attempt to find all nash equilibria for a game. Returns a list of dicts, keys are symbols, values are probabilities (numbers or symbols."""
         result = []
         action_shape = self.payoffs.shape[:-1]
         possible_actions = [list(range(player_actions)) for player_actions in action_shape]
@@ -422,13 +449,22 @@ class Game(object):
         # we should first eliminate dominated strategies. we will skip that step for now
         for acombo in iter_subset_combos(possible_actions):
            if is_pure(acombo):
-               pass # for now
+               # print(acombo)
+               profile = [[[player_action[0], 1]] for player_action in acombo]
+               if not self.is_dominated(profile):
+                    profile_dict = [list_to_dict(player_profile) for player_profile in profile]
+                    result.append(profile_dict)
            else:
                #print("checking combo", acombo)
                combo_solutions = self._get_indifference_probs(acombo)
-               result.extend(combo_solutions)
-               #print(combo_solutions)
-               #print("")
+               for asol in combo_solutions:
+                   # print('asol', asol)
+                   #listy = [dict_to_list(psol) for psol in asol]
+                   #print('psol', psol)
+                   carnate = self._carnate_support(asol)
+                   listy = [dict_to_list(elm) for elm in carnate]
+                   if not self.is_dominated(listy):
+                       result.append(asol)
         return result
            
            

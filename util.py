@@ -38,24 +38,25 @@ def iterprob(actions):
         # print('oldpos', oldpos, 'prob', prob)
         yield (oldpos, prob)
         
-def itersymbol(symbol_actions):
-    """Generator for iterating through symbol_actions. Symbol action is a list of lists, first index in player. Inner list is a tuple, (player_action, symbol).
-       yeields a tuple (player_actions, symbol expression)"""
-    pos = [0] * len(symbol_actions)
+def itersupport(support_actions):
+    """Generator for iterating through support_actions. Support_actions is a list of lists, first index in player. Inner list is a tuple, (player_action, probility).
+       probability is either a symbol or a number
+       yields a tuple (player_actions, probability). Probability is either a number or a symbol expression."""
+    pos = [0] * len(support_actions)
     done = False
     while not done:
         pospos = 0
-        while pos[pospos] == len(symbol_actions[pospos]) - 1:
+        while pos[pospos] == len(support_actions[pospos]) - 1:
             pospos += 1
-            if pospos == len(symbol_actions):
+            if pospos == len(support_actions):
                 done = True
                 break
         prob = 1
         palist = []
-        for ii in range(len(symbol_actions)):
-            # print(ii, symbol_actions[ii][pos[ii]])
-            palist.append( symbol_actions[ii][pos[ii]][0])
-            prob *= symbol_actions[ii][pos[ii]][1]
+        for ii in range(len(support_actions)):
+            # print(ii, support_actions[ii][pos[ii]])
+            palist.append( support_actions[ii][pos[ii]][0])
+            prob *= support_actions[ii][pos[ii]][1]
         # print(pos, pospos)
         if not done:
             pos[pospos] += 1
@@ -108,7 +109,7 @@ def iter_subset_combos(actions):
         prob = 1
         sslist = []
         for ii in range(len(actions)):
-            # print(ii, symbol_actions[ii][pos[ii]])
+            # print(ii, support_actions[ii][pos[ii]])
             sslist.append( action_subsets[ii][pos[ii]])
         # print(pos, pospos)
         if not done:
@@ -124,7 +125,14 @@ def is_pure(profile):
         if len(elm) != 1:
             return False
     return True
+    
+def dict_to_list(adict):
+    """Turn a dict into a list of pairs"""
+    return [[key, adict[key]] for key in adict]
 
+def list_to_dict(alist):
+   """Turn a list of list pairs into a dict"""
+   return {elm[0]:elm[1] for elm in alist}
     
     
 
