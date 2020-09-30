@@ -4,9 +4,12 @@ from copy import deepcopy
 import numpy as np
 from sympy import symbols
 from sympy.core import expr
+from sympy.core.basic import preorder_traversal
 from sympy.solvers import solve
-from sympy.core.expr import Expr
+#from sympy.core.expr import Expr
 from sympy.core import Number
+from sympy.core import Symbol
+from sympy.core import Expr
 
 from fractions import Fraction
 from util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
@@ -377,7 +380,7 @@ class Game(object):
              #print("sympy threw an exception, here the equations ans symbols", all_equations, symbols_list)
              return []
         if type(initial_solutions) == dict:
-            support_result = self._sympy_dict_to_support(initial_solutions)
+            support_result = self._sympy_dict_to_profile(initial_solutions)
             #print(" a dict?? WFTT???")
             #print([initial_solutions])
             #print(support_result)
@@ -407,36 +410,47 @@ class Game(object):
         #    print(asolution)
         return real_solutions
         
-    def _sympy_dict_to_support(self, sd):
+    def _sympy_dict_to_profile(self, pd):
         """Given a sympy dictionary indicating solutions to indifference equations, return a support structure."""
-        #The probabilities in the supoort here might be a number or an expression
-        support = [ {} for ii in range(self.player_count)]
+        #The probabilities in the profile here might be a number or an expression
+        profile = [ {} for ii in range(self.player_count)]
         
-        for elm in sd.keys():
+        for elm in pd.keys():
             name = str(elm)
             pieces = name.split('_')
             player = int(pieces[1])
             action = int(pieces[2])
-            support[player][action] = sd[elm]
-        return support
+            profile[player][action] = pd[elm]
+        # The profile also must include self-referntial values for symbolic probabilities e.g
+        # if sympy says player 0 has an action profile of 0: 1 - p_0_1 the we must also include in his action dict a value 1: p_0_1 
+        for elm in pd.values():
+            if isinstance(elm, Expr):
+                for arg in  preorder_traversal(elm):
+                    if isinstance(arg, Symbol):
+                        name = str(arg)
+                        pieces = name.split('_')
+                        player = int(pieces[1])
+                        action = int(pieces[2])
+                        profile[player][action] = arg
+        return profile
         
-    def _carnate_support(self, support):
+    def _carnate_profile(self, profile):
         """Given a support dict which may contain sympy expressions as values, return a suport with float values."""
-        # We need this to evaluate the payoff to a player of a given strategy profile. I think it's okay when we have an equation to
-        # just arbitrarily pick a value e.g. if player 0 can play actions 0 or 1 with any probabilitie sthat add up to 1, we'll just
-        # pretend he always picks action 0
-        support_result = [{} for ii in range(self.player_count)]
-        for player_index, player_actions in enumerate(support):
+        # We need this to evaluate the payoff to a player of a strategy profile that is an expression rather than a number e.g. player 0
+        # will play actions 0 and 1 in any probabilities that add to 1.  We will treat such a case as the plyer choosing all actions in the support with equal probability.
+        profile_result = [{} for ii in range(self.player_count)]
+        for player_index, player_actions in enumerate(profile):
+            even = 1.0 / len(player_actions)
             for action in player_actions:
                 action_prob = player_actions[action]
                 if isinstance(action_prob, Number):
-                    support_result[player_index][action] = float(action_prob)
+                    profile_result[player_index][action] = float(action_prob)
                 elif isinstance(action_prob, Expr):
-                    support_result[player_index] = {action:1}
+                    profile_result[player_index] = {anaction: even for anaction in player_actions}
                     continue
                 else:
-                    support_result[player_index][action] = float(action_prob)
-        return support_result
+                    profile_result[player_index][action] = float(action_prob)
+        return profile_result
               
         
    
@@ -461,7 +475,7 @@ class Game(object):
                    # print('asol', asol)
                    #listy = [dict_to_list(psol) for psol in asol]
                    #print('psol', psol)
-                   carnate = self._carnate_support(asol)
+                   carnate = self._carnate_profile(asol)
                    listy = [dict_to_list(elm) for elm in carnate]
                    if not self.is_dominated(listy):
                        result.append(asol)
