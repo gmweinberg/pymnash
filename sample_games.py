@@ -60,9 +60,9 @@ def combo_reducible(n):
     
 
 def dunderheads(n):
-    """A sample game similar to battle of genders, except there are only two options and all players have the same preferrred option."""
+    """Multi-player High-Low. Similar to battle of genders, except there are only two options and all players have the same preferrred option."""
     # There are two pure nash equilibria, the 'smart' on where evryone picks the preferred option, and the 'dunderheaded' one where everyone
-    # pick the option they don't like. There should also be a 'super-dunderheaded' version where all players mix their picks."""
+    # pick the option they don't like. There should also be a 'super-dunderheaded' solutions where all player mix their picks.
     payoffs = np.zeros(tuple([2] * n + [3]), dtype=float)
     for indices in iterindices(payoffs.shape):
         good = True # everyone is playing the good choice
@@ -123,11 +123,18 @@ def matching_pennies(n):
     #print(payoffs)
     return Game(payoffs)
 
+def lowest_no_match(n, m):
+    """n players have m choices of numbers, m > n. The winning player is the player who picks the lowest non-negative integer not chosen by any other player."""
+    # we will restrict the game to m choices so we have a hope of finding solutions. In principle this game could be played with an infinite number of possible
+    # moves, nobody igoing to play a number all that much higher than the number of players in any case.
+    payoffs = None
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--players', type=int, default=3)
+    parser.add_argument('--m', type=int, default=None, help="integer parameter that exists for some games", default=None)
     parser.add_argument('--game', default='battle_of_genders')
     parser.add_argument('--pure', action='store_true', help='find pure strategy equilibria')
     parser.add_argument('--payoffs', help='show payoff matrix', action='store_true')
@@ -211,4 +218,3 @@ if __name__ == '__main__':
 #./sample_games.py --support "[[0,1,2], [0,1,2], [0,1,2]]" # this will give unique probs
 #./sample_games.py --support "[[1,2], [1,2], [1,2]]"
 #./sample_games.py --players 4 --support "[[1,2], [1,2], [0,3], [0, 3]]" # this should give lines of solutions.
-

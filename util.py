@@ -1,6 +1,6 @@
 import numpy
 from fractions import Fraction
-from itertools import combinations
+from itertools import combinations, product
 
 def coords_from_pos(thearray, pos):
     """Get the corrdinates from a one-dimensional position and shape. We will make the first index most signifcant."""
@@ -13,6 +13,27 @@ def coords_from_pos(thearray, pos):
         pos -= coord * prod
     coords.append(pos)
     return tuple(coords)
+
+def mult(iterable):
+    prod = 1
+    for elm in iterable:
+        prod *= elm
+    return prod
+
+def pos_from_coords(shape, coords):
+    sum_ = 0
+    for ii, coord in enumerate(coords):
+        mul = mult([shape[iii] for iii in range(ii + 1, len(shape)) ])
+        sum_ += coord * mul
+    return sum_
+
+def enumershape(shape):
+    pieces = [[elm for elm in range(shape[ii])] for ii in range(len(shape))]
+    ii = -1
+    for elm in product(*pieces):
+        ii += 1
+        yield (ii, elm)
+
 
 def iterprob(actions):
     """Generator for iterating through an array of player action probabilities. Yields a tuple (player_actions, probability) where player_actions is a tuple showing
@@ -143,4 +164,17 @@ def silly(pos):
     for ii in range(len(pos)):
         result += (10 ** ii) * (pos[ii] + 1)
     return result
+
+
+def test_pos_from_coords():
+    shape = (3,3,2)
+    for ii in range(3):
+        for iii in range(3):
+            for iv in range(2):
+                print(pos_from_coords(shape, (ii, iii, iv)))
+
+#test_pos_from_coords()
+
+for ii, pos in enumershape((3,3,2)):
+    print(ii, pos)
 

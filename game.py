@@ -451,9 +451,8 @@ class Game(object):
                 else:
                     profile_result[player_index][action] = float(action_prob)
         return profile_result
-              
-        
-   
+
+
     def find_all_equilibria(self):
         """Attempt to find all nash equilibria for a game. Returns a list of dicts, keys are symbols, values are probabilities (numbers or symbols."""
         result = []
@@ -480,9 +479,3 @@ class Game(object):
                    if not self.is_dominated(listy):
                        result.append(asol)
         return result
-           
-           
-       
-       
-       
-

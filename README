@@ -1,12 +1,12 @@
 This module is intended to allow finding nash equilibria of multi-player games.
-It is still in early development and since I'm just doing this in my spare time it may never get anywhere.
-So far all it can do is check if a purported nash equibrium is in fact an ne.
+There's no real documentation, I just made this to play around with.
+The ugliness is largely a result of this, I tried out a bunch of things that don't work very well
+before I discovered the awesome power of sympy.
 
-The number of possibilities to check completely explodes as we increase the number of players and actions, so we will never be able to
-find all the equilibria except for relatively small games.
+The payoff matrix is a multidimensional array.
+There's on dimension for each player, and the length in that dimension is te number of moves for that player.
+The innermost dimension is the payoffs for each player at that position.
 
-python -m pdb script.py
-step
-next
-continue
-break
+
+
+
