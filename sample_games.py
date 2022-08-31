@@ -5,7 +5,8 @@ import argparse
 import json
 from fractions import Fraction
 from game import Game
-from util import coords_from_pos, iterindices
+from util import coords_from_pos, iterindices, enumershape
+from collections import defaultdict
 
 """Process some test games to verify we can find their equilibria."""
 prisoner_labels = ['capone', 'number6', 'hogan']
@@ -123,18 +124,34 @@ def matching_pennies(n):
     #print(payoffs)
     return Game(payoffs)
 
-def lowest_no_match(n, m):
+def how_low_dare_you_go(n, m):
     """n players have m choices of numbers, m > n. The winning player is the player who picks the lowest non-negative integer not chosen by any other player."""
     # we will restrict the game to m choices so we have a hope of finding solutions. In principle this game could be played with an infinite number of possible
     # moves, nobody igoing to play a number all that much higher than the number of players in any case.
-    payoffs = None
-
+    payoffs = np.zeros(tuple(([m] * n + [n])), dtype=float)
+    for jj, coords in enumershape(payoffs.shape[:-1]):
+        counts = defaultdict(int) # number of players picking this number
+        win = None
+        for iii in range(len(coords)):
+            counts[coords[iii]] += 1
+        for ii in sorted(counts.keys()):
+            if counts[ii] == 1:
+                win = ii
+                break
+        if win is not None:
+            done = False
+            for player_index in range(len(coords)):
+                if coords[player_index] == win:
+                    pos = list(coords)
+                    pos.append(player_index)
+                    payoffs[tuple(pos)] = 1
+    return Game(payoffs)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--players', type=int, default=3)
-    parser.add_argument('--m', type=int, default=None, help="integer parameter that exists for some games", default=None)
+    parser.add_argument('--m', type=int, default=None, help="integer parameter that exists for some games")
     parser.add_argument('--game', default='battle_of_genders')
     parser.add_argument('--pure', action='store_true', help='find pure strategy equilibria')
     parser.add_argument('--payoffs', help='show payoff matrix', action='store_true')
@@ -170,6 +187,9 @@ if __name__ == '__main__':
     elif 'prisoners_dilemma'.find(args.game) == 0:
         agame = prisoners_dilemma(args.players)
         #profile = whatever
+    elif 'how_low'.find(args.game) == 0:
+        agame = how_low_dare_you_go(args.players, args.m)
+        #profile = whatever
     if agame is None:
         print('unknown game')
         exit()
@@ -179,7 +199,6 @@ if __name__ == '__main__':
         print('payoffs:')
         print(repr(agame.payoffs))
         print('')
-        print(repr(agame.payoffs[(0,0,0)][1]))
     if args.pure:
         print('pure:')
         print(repr(agame.find_pure()))

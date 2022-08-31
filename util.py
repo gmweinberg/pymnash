@@ -172,9 +172,3 @@ def test_pos_from_coords():
         for iii in range(3):
             for iv in range(2):
                 print(pos_from_coords(shape, (ii, iii, iv)))
-
-#test_pos_from_coords()
-
-for ii, pos in enumershape((3,3,2)):
-    print(ii, pos)
-
