@@ -66,9 +66,11 @@ def dunderheads(n):
     """Multi-player High-Low. Similar to battle of genders, except there are only two options and all players
         have the same preferrred option."""
     # There are two pure nash equilibria, the 'smart' on where evryone picks the preferred option, and the
-    # 'dunderheaded' one where everyone
-    # pick the option they don't like. There should also be a 'super-dunderheaded' solutions where all player mix their picks.
-    payoffs = np.zeros(tuple([2] * n + [3]), dtype=float)
+    # 'dunderheaded' one where everyone picks the option they don't like. 
+    # There should also be a 'super-dunderheaded' solutions where all player mix their picks.
+    # The probability of pcking the dunderheaded option will be higher, so the higher chance of getting a match
+    # exactly compensates for the lower payoff.
+    payoffs = np.zeros(tuple([2] * n + [n]), dtype=float)
     for indices in iterindices(payoffs.shape):
         good = True # everyone is playing the good choice
         bad = True
@@ -254,11 +256,8 @@ if __name__ == '__main__':
     if args.all:
         all_nash = agame.find_all_equilibria()
         for anash in all_nash:
-            pass
             print(anash)
 
 #./test_sample_game.py --game battle --support "[[0,1,2], [0,1,2], [0,1,2]]" # this will give unique probs
 #./test_sample_game.py --game battle --support "[[1,2], [1,2], [1,2]]"
 #./test_sample_game.py --game battle --players 4 --support "[[1,2], [1,2], [0,3], [0, 3]]" # this should give lines of solutions.
-
-

@@ -21,6 +21,7 @@ class Game(object):
     def __init__(self, payoffs, player_labels = None, action_labels = None):
         """Payoffs is an np.array of floats, giving payouts to all players.
            If labels are omitted or incomplete we'll just fill them in with stringified ints."""
+        # For now I'm not using player/acion labels.
         self.verbose = False
         if type(payoffs) != np.ndarray:
             raise Exception('Payoffs must be numpy array')
@@ -48,7 +49,8 @@ class Game(object):
         self.dominated = [[] for ii in range(self.num_players())]
 
     def __repr__(self):
-         return 'payoffs {}\nplayer_labels {}\naction_labels {}'.format(self.payoffs, self.player_labels, self.action_labels)
+         return 'payoffs {}\nplayer_labels {}\naction_labels {}'.format(self.payoffs,
+                self.player_labels, self.action_labels)
 
     def eq(self, val1, val2):
         """Check whether val1 and val2 are 'close enough' to count as equal."""
@@ -68,12 +70,13 @@ class Game(object):
         return payoffs
 
     def is_dominated(self, profile, profile_payoffs=None):
-        """Check if there exists a pure stratgey for at least one player which gives that player a payoff than the specified profile."""
+        """Check if there exists a pure strategy for at least one player which gives that player a payoff
+           than the specified profile."""
         if profile_payoffs is None:
             profile_payoffs = self.get_profile_payoffs(profile)
         for player in range(self.player_count):
             old_player_profile = profile[player]
-            for anaction in range(len(self.payoffs[player])):
+            for anaction in range(self.payoffs.shape[player]):
                 action_payoff = 0
                 profile[player] = [[anaction, 1]]
                 for acombo in itersupport(profile):
@@ -82,7 +85,8 @@ class Game(object):
                 profile[player] = old_player_profile
                 if action_payoff > profile_payoffs[player] + self._wiggle:
                     if self.verbose:
-                        print("is_dominated profile {} is dominated for player {} by pure strategy {}".format(profile, player, anaction))
+                        print("is_dominated profile {} is dominated for player {} by pure strategy {}".format(profile,
+                          player, anaction))
                     return True
         return False
 
@@ -90,7 +94,8 @@ class Game(object):
         """Check if the supplied strategy profile is a nash equilibrium.
            Profile is a list of lists, each list is strategy profile for one player.
            Returns a boolean."""
-        # In order to be a valid nash equilibrium, each player must be indifferent as to which action in his support he plays
+        # In order to be a valid nash equilibrium, each player must be indifferent
+        # as to which action in his support he plays
         # (suppport is actions played with non-zero probability)
         # also, a player must not be able to do better by playing an action not in his suport.
         # of course, no probability can be negative and all probabilities must sum to 1.
@@ -146,7 +151,8 @@ class Game(object):
                         nonsupport_utility = utility
                 if not is_nash:
                      if self.verbose:
-                        print('rejected utility', utility, 'support_utility', support_utility,  'nonsupport_utility', nonsupport_utility)
+                        print('rejected utility', utility, 'support_utility', support_utility,
+                              'nonsupport_utility', nonsupport_utility)
                      return False
 
         return is_nash
@@ -161,7 +167,8 @@ class Game(object):
 
 
     def find_pure(self):
-        """Find any pure nash equilibria for this game. Returns a list of lists, one entry per equilibrium found. Inner list is the actions for each player."""
+        """Find any pure nash equilibria for this game. Returns a list of lists, one entry per equilibrium found.
+           Inner list is the actions for each player."""
         # Iterate though the list of pure stretegies, check if it is a nash equilibrium
         eq = []
         shape = self.payoffs.shape[:-1]
@@ -191,7 +198,8 @@ class Game(object):
 
 
     def iesds1(self):
-        """Perform iteratated elimination of strictly dominated strategies to get a reduced game, considering stratgies dominated by a single other strategy.
+        """Perform iteratated elimination of strictly dominated strategies to get a reduced game,
+           considering stratgies dominated by a single other strategy.
            Updates dominated in place.
            returns a boolean indicating it found at least 1 new dominated strategy. """
         real_progress = False
@@ -249,11 +257,15 @@ class Game(object):
         return real_progress
 
     def iesds2(self):
-        """Perform iteratated elimination of strictly dominated strategies to get a reduced game, considering stratgies dominated by a linear combo of 2 other strategies.
+        """Perform iteratated elimination of strictly dominated strategies to get a reduced game,
+           considering stratgies dominated by a linear combo of 2 other strategies.
            Returns a boolean indicating it found at least one new dominated strategy"""
-        # For strategy 0 to be dominated by a combo of strategies 1 and 2, for every combo of other players' strategies it must be the case that at least one of
-        # strategies 1 and 2 score better than stratgey 0 at every point. If both perform better, we don't get any new information as to what combinattions perform better, but if
-        # only strategy 1 performs better we have a minimum ratio of strategy 1 to strategy 2 for a dominating combo, and if only stratgey 2 perfoms better we get a maximum ratio.
+        # For strategy 0 to be dominated by a combo of strategies 1 and 2, for every combo of other players'
+        # strategies it must be the case that at least one of
+        # strategies 1 and 2 score better than strategy 0 at every point. If both perform better, we don't get any
+        # new information as to what combinations perform better, but if
+        # only strategy 1 performs better we have a minimum ratio of strategy 1 to strategy
+        # 2 for a dominating combo, and if only stratgey 2 perfoms better we get a maximum ratio.
 
         num_players = self.num_players()
         progress = True
@@ -333,9 +345,11 @@ class Game(object):
         return True
 
     def _get_indifference_probs(self, support):
-        """Find the combinations of probabilities such that each player is indifferent to which action in his own support which he plays given the probabilities of the other players.
-          Support is a list of lists, players and actions. Each player could have any number of actions, the number of possible actions  will vary by player.
-          Returns a list of dicts."""
+        """Find the combinations of probabilities such that each player is indifferent to which action in his
+           own support which he plays given the probabilities of the other players.
+           Support is a list of lists, players and actions. Each player could have any number of actions,
+           the number of possible actions  will vary by player.
+           Returns a list of dicts."""
         support_symbols = [] # list of lists. Value is a tuple (player_action (int), symbol)
         symbols_list = [] # put all symbols in one list for solver
         for player in range(len(support)):
@@ -423,7 +437,8 @@ class Game(object):
             action = int(pieces[2])
             profile[player][action] = pd[elm]
         # The profile also must include self-referntial values for symbolic probabilities e.g
-        # if sympy says player 0 has an action profile of 0: 1 - p_0_1 the we must also include in his action dict a value 1: p_0_1
+        # if sympy says player 0 has an action profile of 0: 1 - p_0_1 the we must also include in his
+        # action dict a value 1: p_0_1
         for elm in pd.values():
             if isinstance(elm, Expr):
                 for arg in  preorder_traversal(elm):
@@ -437,8 +452,9 @@ class Game(object):
 
     def _carnate_profile(self, profile):
         """Given a support dict which may contain sympy expressions as values, return a suport with float values."""
-        # We need this to evaluate the payoff to a player of a strategy profile that is an expression rather than a number e.g. player 0
-        # will play actions 0 and 1 in any probabilities that add to 1.  We will treat such a case as the plyer choosing all actions in the support with equal probability.
+        # We need this to evaluate the payoff to a player of a strategy profile that is an expression rather
+        # than a number e.g. player 0 will play actions 0 and 1 in any probabilities that add to 1.
+        # We will treat such a case as the plyer choosing all actions in the support with equal probability.
         profile_result = [{} for ii in range(self.player_count)]
         for player_index, player_actions in enumerate(profile):
             even = 1.0 / len(player_actions)
@@ -455,7 +471,8 @@ class Game(object):
 
 
     def find_all_equilibria(self):
-        """Attempt to find all nash equilibria for a game. Returns a list of dicts, keys are symbols, values are probabilities (numbers or symbols."""
+        """Attempt to find all nash equilibria for a game. Returns a list of dicts, keys are symbols,
+           values are probabilities (numbers or symbols)."""
         result = []
         action_shape = self.payoffs.shape[:-1]
         possible_actions = [list(range(player_actions)) for player_actions in action_shape]
