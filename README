@@ -4,7 +4,7 @@ The ugliness is largely a result of this, I tried out a bunch of things that don
 before I discovered the awesome power of sympy.
 
 The payoff matrix is a multidimensional array.
-There's on dimension for each player, and the length in that dimension is te number of moves for that player.
+There's one dimension for each player, and the length in that dimension is the number of moves for that player.
 The innermost dimension is the payoffs for each player at that position.
 
 

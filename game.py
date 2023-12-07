@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 from sympy import symbols
 from sympy.core import expr
-from sympy.core.basic import preorder_traversal
+from sympy import preorder_traversal
 from sympy.solvers import solve
 #from sympy.core.expr import Expr
 from sympy.core import Number
@@ -66,7 +66,7 @@ class Game(object):
             for player in range(self.player_count):
                 payoffs[player] += self.payoffs[(combo_actions)][player] * acombo[1]
         return payoffs
- 
+
     def is_dominated(self, profile, profile_payoffs=None):
         """Check if there exists a pure stratgey for at least one player which gives that player a payoff than the specified profile."""
         if profile_payoffs is None:
@@ -87,7 +87,8 @@ class Game(object):
         return False
 
     def is_nash(self, profile):
-        """Check if the supplied strategy profile is a nash equilibrium. Profile is a list of lists, each list is strategy profile for one player.
+        """Check if the supplied strategy profile is a nash equilibrium.
+           Profile is a list of lists, each list is strategy profile for one player.
            Returns a boolean."""
         # In order to be a valid nash equilibrium, each player must be indifferent as to which action in his support he plays
         # (suppport is actions played with non-zero probability)
@@ -109,7 +110,7 @@ class Game(object):
                 raise Exception('probabilities do not sum to 1')
             others_profile = deepcopy(profile)
             del others_profile[player]
-            # check the utility 
+            # check the utility
             for jj, prob in enumerate(player_profile):
                 if self.verbose:
                     print('player', player, 'others_profile', others_profile)
@@ -147,7 +148,7 @@ class Game(object):
                      if self.verbose:
                         print('rejected utility', utility, 'support_utility', support_utility,  'nonsupport_utility', nonsupport_utility)
                      return False
-                
+
         return is_nash
 
     def num_actions(self, player):
@@ -250,10 +251,10 @@ class Game(object):
     def iesds2(self):
         """Perform iteratated elimination of strictly dominated strategies to get a reduced game, considering stratgies dominated by a linear combo of 2 other strategies.
            Returns a boolean indicating it found at least one new dominated strategy"""
-        # For strategy 0 to be dominated by a combo of strategies 1 and 2, for every combo of other players' strategies it must be the case that at least one of 
+        # For strategy 0 to be dominated by a combo of strategies 1 and 2, for every combo of other players' strategies it must be the case that at least one of
         # strategies 1 and 2 score better than stratgey 0 at every point. If both perform better, we don't get any new information as to what combinattions perform better, but if
         # only strategy 1 performs better we have a minimum ratio of strategy 1 to strategy 2 for a dominating combo, and if only stratgey 2 perfoms better we get a maximum ratio.
-        
+
         num_players = self.num_players()
         progress = True
         real_progress = False
@@ -262,7 +263,7 @@ class Game(object):
             progress = False
             for player in range(num_players):
                 for action_a in range(self.payoffs.shape[player]):
-                    
+
                     if action_a in dominated[player]:
                         continue
                     for action_b in range(self.payoffs.shape[player]):
@@ -330,7 +331,7 @@ class Game(object):
         if self.verbose:
             print("player", player, "strategy", strat_a, "dominated by ", strat_b, strat_c, min_p, max_p)
         return True
-        
+
     def _get_indifference_probs(self, support):
         """Find the combinations of probabilities such that each player is indifferent to which action in his own support which he plays given the probabilities of the other players.
           Support is a list of lists, players and actions. Each player could have any number of actions, the number of possible actions  will vary by player.
@@ -391,10 +392,10 @@ class Game(object):
             ok = True
             for val in asolution:
                 try:
-                    if type(val) != symbol_type and val > 1 or val <= 0: 
+                    if type(val) != symbol_type and val > 1 or val <= 0:
                         ok = False
                         break
-                        
+
                 except Exception:
                     pass # can't compare symbol with number, carry on
             if ok:
@@ -409,12 +410,12 @@ class Game(object):
         #for asolution in real_solutions:
         #    print(asolution)
         return real_solutions
-        
+
     def _sympy_dict_to_profile(self, pd):
         """Given a sympy dictionary indicating solutions to indifference equations, return a support structure."""
         #The probabilities in the profile here might be a number or an expression
         profile = [ {} for ii in range(self.player_count)]
-        
+
         for elm in pd.keys():
             name = str(elm)
             pieces = name.split('_')
@@ -422,7 +423,7 @@ class Game(object):
             action = int(pieces[2])
             profile[player][action] = pd[elm]
         # The profile also must include self-referntial values for symbolic probabilities e.g
-        # if sympy says player 0 has an action profile of 0: 1 - p_0_1 the we must also include in his action dict a value 1: p_0_1 
+        # if sympy says player 0 has an action profile of 0: 1 - p_0_1 the we must also include in his action dict a value 1: p_0_1
         for elm in pd.values():
             if isinstance(elm, Expr):
                 for arg in  preorder_traversal(elm):
@@ -433,7 +434,7 @@ class Game(object):
                         action = int(pieces[2])
                         profile[player][action] = arg
         return profile
-        
+
     def _carnate_profile(self, profile):
         """Given a support dict which may contain sympy expressions as values, return a suport with float values."""
         # We need this to evaluate the payoff to a player of a strategy profile that is an expression rather than a number e.g. player 0
