@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "example_package_gmweinberg"
-version = "0.0.1"
+name = "pymnash"
+version = "0.7"
 authors = [
   { name="George Weinberg", email="gmweinberg@fastmail.fm" },
 ]
-description = "A small example package"
-readme = "README.md"
+description = "Find Nash Equilibria of Multiplayer Games"
+readme = "README"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
