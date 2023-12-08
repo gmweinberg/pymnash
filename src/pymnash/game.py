@@ -10,6 +10,7 @@ from sympy.solvers import solve
 from sympy.core import Number
 from sympy.core import Symbol
 from sympy.core import Expr
+from sympy.core.numbers import Float as FloatType
 
 from fractions import Fraction
 from util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
@@ -394,8 +395,16 @@ class Game(object):
              # This means there are no solutions with the given support
              #print("sympy threw an exception, here the equations ans symbols", all_equations, symbols_list)
              return []
+        if not initial_solutions:
+            return []
         if type(initial_solutions) == dict:
             support_result = self._sympy_dict_to_profile(initial_solutions)
+            for aprofile in support_result:
+                for val in aprofile.values():
+                    #print('type', type(val))
+                    if type(val) == FloatType:
+                        if float(val) > 1 or float(val) <= 0:
+                            return []
             #print(" a dict?? WFTT???")
             #print([initial_solutions])
             #print(support_result)
