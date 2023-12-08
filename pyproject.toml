@@ -8,9 +8,14 @@ version = "0.7"
 authors = [
   { name="George Weinberg", email="gmweinberg@fastmail.fm" },
 ]
+dependencies = [
+    "sympy"
+]
 description = "Find Nash Equilibria of Multiplayer Games"
-readme = "README"
+license = {file = "LICENSE"}
+readme = {file = "README", content-type = "text/plain"}
 requires-python = ">=3.8"
+keywords = ["nash"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: BSD License",
@@ -20,4 +25,3 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/gmweinberg/pymnash"
 Issues = "https://github.com/gmweinberg/pymnash/issues"
-~                                                                         

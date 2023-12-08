@@ -66,7 +66,7 @@ def dunderheads(n):
     """Multi-player High-Low. Similar to battle of genders, except there are only two options and all players
         have the same preferrred option."""
     # There are two pure nash equilibria, the 'smart' on where evryone picks the preferred option, and the
-    # 'dunderheaded' one where everyone picks the option they don't like. 
+    # 'dunderheaded' one where everyone picks the option they don't like.
     # There should also be a 'super-dunderheaded' solutions where all player mix their picks.
     # The probability of pcking the dunderheaded option will be higher, so the higher chance of getting a match
     # exactly compensates for the lower payoff.
@@ -159,9 +159,26 @@ def how_low_dare_you_go(n, m):
                     payoffs[tuple(pos)] = 1
     return Game(payoffs)
 
+def mixed_dom(n, m):
+    """A two-player game where one player has a dominated strategy, but it takes a combination of
+       m strategies to defat it (one player has m strategies, the other has m + 1).
+       Based on a comment by kevinwangg in the thread
+       https://www.reddit.com/r/GAMETHEORY/comments/18d5zxx/dominated_by_3_or_more_strategies/
+    """
+    if n != 2:
+        raise ValueError("This game is only supported for 2 players")
+    payoffs = np.zeros(tuple((m + 1, m, 2)), dtype=float)
+    for ii in range(m):
+        payoffs[ii][ii][0] = m + 1
+        payoffs[ii][ii][1] = -1 * (m + 1)
+        payoffs[m][ii][0] = 1
+        payoffs[m][ii][1] = -1
+    return Game(payoffs)
+
+
 game_names = {"battle_of_genders":battle_of_genders, "reducible":reducible, "combo_reducible":combo_reducible,
                "dunderheads":dunderheads, "prisoners_dilemma":prisoners_dilemma, "matching_pennies":matching_pennies,
-               "how_low_dare_you_go":how_low_dare_you_go}
+              "how_low_dare_you_go":how_low_dare_you_go, "mixed_dom":mixed_dom}
 
 def get_game_fun(name):
     """Find the factory function based on the game name"""
@@ -189,7 +206,7 @@ def get_canned_profile(fun, num_players):
         return profile
     if fun == matching_pennies:
         frac = 1 / num_players
-        profile = [[frac] * num_players, 
+        profile = [[frac] * num_players,
                    [frac] * num_players] + [[1] + [0] * (num_players - 1)] * (num_players - 2)
         return profile
 
@@ -215,7 +232,7 @@ if __name__ == '__main__':
     agame = None
     profile = None
     game_fun = get_game_fun(args.game)
-    if game_fun == how_low_dare_you_go:
+    if game_fun in [how_low_dare_you_go, mixed_dom]:
         agame = game_fun(args.players, args.m)
     else:
         agame = game_fun(args.players)
