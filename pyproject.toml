@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pymnash"
-version = "0.7"
+version = "0.7.3"
 authors = [
   { name="George Weinberg", email="gmweinberg@fastmail.fm" },
 ]
 dependencies = [
-    "sympy"
+    "sympy", "numpy"
 ]
 description = "Find Nash Equilibria of Multiplayer Games"
 license = {file = "LICENSE"}

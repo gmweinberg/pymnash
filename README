@@ -17,5 +17,5 @@ and action 2 with probability 1 - p.
 This package is intended more for students of game theory than for the practical value of finding Nash Equilibria,
 I'm not at all sure they have any practical value. One observation you will make after playing around with this
 is that for some multiplayer games, once some players have decided on a course of action it doesn't matter
-what the oter players do.
+what the other players do.
  

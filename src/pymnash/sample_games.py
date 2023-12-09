@@ -6,8 +6,8 @@ import numpy as np
 import argparse
 
 import json
-from game import Game
-from util import coords_from_pos, iterindices, enumershape
+from pymnash.game import Game
+from pymnash.util import coords_from_pos, iterindices, enumershape
 from collections import defaultdict
 
 
@@ -161,7 +161,7 @@ def how_low_dare_you_go(n, m):
 
 def mixed_dom(n, m):
     """A two-player game where one player has a dominated strategy, but it takes a combination of
-       m strategies to defat it (one player has m strategies, the other has m + 1).
+       m strategies to defeat it (one player has m strategies, the other has m + 1).
        Based on a comment by kevinwangg in the thread
        https://www.reddit.com/r/GAMETHEORY/comments/18d5zxx/dominated_by_3_or_more_strategies/
     """
@@ -175,10 +175,59 @@ def mixed_dom(n, m):
         payoffs[m][ii][1] = -1
     return Game(payoffs)
 
+def chicken(n):
+    """For this variation of multi-player cheicken, each player has 2 possible actions
+       (0 = chicken, 1 = hawk).  If everyne is a chicken, everyone scores 0.
+       If there is just one hawk, he gets 5 points and the chickens each lose 1.
+       If there is more than 1 hawk, they each score -10 and the chickens get zero.
+    """
+    payoffs = np.zeros(tuple([2] * n + [n]), dtype=float)
+    shape = payoffs.shape[:-1]
+    for pos in iterindices(shape):
+        hawks = 0
+        for ii in range(len(shape)):
+            if pos[ii] == 1:
+                hawks += 1
+        for ii in range(n):
+            where = tuple(list(pos) + [ii])
+            if hawks == 1:
+                if pos[ii] == 1:
+                    payoffs[where] = 5
+                else:
+                    payoffs[where] = -1
+            elif hawks > 1:
+                if pos[ii] == 1:
+                    payoffs[where] = -10
+    return Game(payoffs)
+
+def stag_hunt(n, m):
+    """Each player has 2 options, 0 = hunt the stag, 1 = chase rabbits.
+       We need a critical number m of stag hunters to catch the stag.
+       If an insufficient number goes after the stag, they get 0
+       If a sufficient number go after the stag, they share the value which I will say is 4 * n.
+    """
+    payoffs = np.zeros(tuple([2] * n + [n]), dtype=float)
+    shape = payoffs.shape[:-1]
+    for pos in iterindices(shape):
+        hunters = 0
+        for ii in range(len(shape)):
+            if pos[ii] == 1:
+                hunters += 1
+        for ii in range(n):
+            where = tuple(list(pos) + [ii])
+            if pos[ii] == 0:
+                payoffs[where] = 1
+            else:
+                if hunters >= m:
+                    payoffs[where] = 4 * n / hunters
+    return Game(payoffs)
+
 
 game_names = {"battle_of_genders":battle_of_genders, "reducible":reducible, "combo_reducible":combo_reducible,
                "dunderheads":dunderheads, "prisoners_dilemma":prisoners_dilemma, "matching_pennies":matching_pennies,
-              "how_low_dare_you_go":how_low_dare_you_go, "mixed_dom":mixed_dom}
+              "how_low_dare_you_go":how_low_dare_you_go, "mixed_dom":mixed_dom, 'chicken':chicken,
+              'stag_hunt':stag_hunt}
+
 
 def get_game_fun(name):
     """Find the factory function based on the game name"""
@@ -232,7 +281,7 @@ if __name__ == '__main__':
     agame = None
     profile = None
     game_fun = get_game_fun(args.game)
-    if game_fun in [how_low_dare_you_go, mixed_dom]:
+    if game_fun in [how_low_dare_you_go, mixed_dom, stag_hunt]:
         agame = game_fun(args.players, args.m)
     else:
         agame = game_fun(args.players)

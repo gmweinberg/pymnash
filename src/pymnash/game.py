@@ -12,8 +12,7 @@ from sympy.core import Symbol
 from sympy.core import Expr
 from sympy.core.numbers import Float as FloatType
 
-from fractions import Fraction
-from util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
+from pymnash.util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
 
 class Game(object):
     """ A class for a multi-player normal form game."""
@@ -134,7 +133,6 @@ class Game(object):
                 utility = 0
                 for (thetuple, theprob) in iterprob(others_profile):
                     utility += relevant_payoffs[thetuple] * theprob
-                # utility = Fraction(utility).limit_denominator() # Fractions are not great for more than 2 players
                 if self.verbose:
                     print('player', player, 'action', jj, 'utility', utility, 'in_support', in_support)
                 is_nash = True
