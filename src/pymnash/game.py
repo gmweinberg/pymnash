@@ -21,7 +21,7 @@ class Game(object):
     def __init__(self, payoffs, player_labels = None, action_labels = None):
         """Payoffs is an np.array of floats, giving payouts to all players.
            If labels are omitted or incomplete we'll just fill them in with stringified ints."""
-        # For now I'm not using player/acion labels.
+        # For now I'm not using player/action labels.
         self.verbose = False
         if type(payoffs) != np.ndarray:
             raise Exception('Payoffs must be numpy array')
@@ -71,7 +71,7 @@ class Game(object):
 
     def is_dominated(self, profile, profile_payoffs=None):
         """Check if there exists a pure strategy for at least one player which gives that player a payoff
-           than the specified profile."""
+           higher than the specified profile."""
         if profile_payoffs is None:
             profile_payoffs = self.get_profile_payoffs(profile)
         for player in range(self.player_count):
@@ -165,7 +165,7 @@ class Game(object):
         return len(self.payoffs.shape) - 1
 
 
-    def find_pure(self):
+    def find_pure(self, simple=True):
         """Find any pure nash equilibria for this game. Returns a list of lists, one entry per equilibrium found.
            Inner list is the actions for each player."""
         # Iterate though the list of pure stretegies, check if it is a nash equilibrium
@@ -178,15 +178,25 @@ class Game(object):
                  profile[player] = [0] * self.num_actions(player)
                  profile[player][action] = 1
              is_nash = self.is_nash(profile)
-             print('profile', profile, 'is_nash', is_nash)
+             if self.verbose:
+                 print('profile', profile, 'is_nash', is_nash)
              if is_nash:
                  eq.append(indices)
-        return eq
+        if simple:
+            return eq
+        # else reformat to have the same output style as find_all_equilibria.
+        result = []
+        for elm in eq:
+            aresult = []
+            for sub in elm:
+                aresult.append({sub:1.0})
+            result.append(aresult)
+        return result
 
 
     def iesds(self):
         """Perform iteratated elimination of strictly dominated strategies to get a reduced game.
-           Returns None, updates self.dominated in place"""
+           Updates self.dominated in place, returns self.dominated"""
         progress = True
         while progress:
             progress = False
@@ -194,6 +204,7 @@ class Game(object):
                 progress = True
             if self.iesds2():
                 progress = True
+        return self.dominated
 
 
     def iesds1(self):
@@ -504,3 +515,5 @@ class Game(object):
                    if not self.is_dominated(listy):
                        result.append(asol)
         return result
+# TODO: add method that finds an equilibrium with a specific support, if such an ne exists.
+

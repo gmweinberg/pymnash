@@ -1,0 +1,24 @@
+.. pymnash documentation master file, created by
+   sphinx-quickstart on Wed Dec 13 14:29:27 2023.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to pymnash's documentation!
+===================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   Usage <usage>
+   Sample Gamesgames <sample_games>
+   Game Methods <game_methods>
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
