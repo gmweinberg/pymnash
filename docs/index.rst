@@ -11,7 +11,7 @@ Welcome to pymnash's documentation!
    :caption: Contents:
 
    Usage <usage>
-   Sample Gamesgames <sample_games>
+   Sample Games <sample_games>
    Game Methods <game_methods>
 
 
