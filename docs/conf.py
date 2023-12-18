@@ -9,7 +9,7 @@
 project = 'pymnash'
 copyright = '2023, George Weinberg'
 author = 'George Weinberg'
-release = '0.7.3'
+release = '0.7.4'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

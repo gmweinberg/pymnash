@@ -1,6 +1,22 @@
 =============
 Basic Usage
 =============
+
+Overview
+--------
+This module contains functionality for finding Nash Equilibria of multi-player (more than 2 player) games.
+Because the number of possibilities that need to be checked explodes as the number of players increases,
+it really only works for games with a relatively small number of players and actions.
+
+This module uses the awesome power of Sympy to solve systems of equations. Sympy will even find general solutions
+such as a player plays action 0 with probability 0, action 1 with probability p, 
+and action 2 with probability 1 - p.
+
+This package is intended more for students of game theory than for the practical value of finding Nash Equilibria,
+I'm not at all sure they have any practical value. One observation you will make after playing around with this
+is that for some multiplayer games, once some players have decided on a course of action it doesn't matter
+what the other players do.
+
 Players and actions
 -------------------
 Players are just represented by an index (player 0, player 1...) and their actions are also
@@ -48,5 +64,4 @@ the dicts are the player actions and probabilities. For the example given, the t
 #. All players play action 1
 
 #. All players play action 0 with probability 0.911437827766148 and action 1 with probability  0.0885621722338523
-
 

@@ -12,7 +12,7 @@ from sympy.core import Symbol
 from sympy.core import Expr
 from sympy.core.numbers import Float as FloatType
 
-from pymnash.util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
+from .util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
 
 class Game(object):
     """ A class for a multi-player normal form game."""
@@ -515,5 +515,24 @@ class Game(object):
                    if not self.is_dominated(listy):
                        result.append(asol)
         return result
-# TODO: add method that finds an equilibrium with a specific support, if such an ne exists.
+
+    def find_support_equilibria(self, support):
+        """Similar to above, but just find the nash equilibria with the given support"""
+        result = []
+        if is_pure(support):
+           # print(acombo)
+            profile = [[[player_action[0], 1]] for player_action in support]
+            if not self.is_dominated(profile):
+                profile_dict = [list_to_dict(player_profile) for player_profile in profile]
+                result.append(profile_dict)
+        else:
+           ind = self._get_indifference_probs(support)
+           if self.verbose:
+               print('indifference probs', indifference_probs)
+           for asol in ind:
+               carnate = self._carnate_profile(asol)
+               listy = [dict_to_list(elm) for elm in carnate]
+               if not self.is_dominated(listy):
+                   result.append(asol)
+        return result
 

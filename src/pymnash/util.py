@@ -1,5 +1,4 @@
 import numpy
-from fractions import Fraction
 from itertools import combinations, product
 
 def coords_from_pos(thearray, pos):

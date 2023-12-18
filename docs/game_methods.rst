@@ -3,7 +3,7 @@ Game Methods
 =======================
 
 If you just want the Nash Equilibria of a relatively small game, it is easiest to just call
-find_all_equilibria. However, if the game is too large for the call to cmplete in a reasonable time, or
+find_all_equilibria. However, if the game is too large for the call to complete in a reasonable time, or
 if you just feel like playing around, it might be worthwhile calling some of the other methods.
 
 find_all(self)
@@ -13,7 +13,7 @@ a Nash Equilibium. Each element of the inner list represents the stratey profile
 Equlibrium::
 
         from pymnash.sample_games import stag_hunt
-        stag = stag_hunt(3)
+        stag = stag_hunt(3, 2)
         ne = stag.find_all_equilibria()
         print(ne)
 
@@ -22,7 +22,21 @@ The results should be
 ``[[{0: 1}, {0: 1}, {0: 1}], [{1: 1}, {1: 1}, {1: 1}], [{0: 0.911437827766148, 1: 0.0885621722338523}, {0: 0.911437827766148, 1: 0.0885621722338523}, {0: 0.911437827766148, 1: 0.0885621722338523}]]``
 
 
-This represents 3 equilibria, one where all players play action 0 (chase rabbits) one where all players play action 1 (huntthe stag), and one where the players all hnt the stag of chase rabbots with equla probabilities.
+This represents 3 equilibria, one where all players play action 0 (chase rabbits) one where all players play action 1 (hunt the stag), and one where the players all hunt the stag or chase rabbots with equal probabilities.
+
+
+find_support_equilibria(self, support)
+--------------------------------------
+Tries to find nash equilibria with the given support. Support is a list of lists,
+outer list is per player, inner list is the actions that player will perform with nonzero probability.::
+
+    from pymnash.sample_games import battle_of_genders
+    battle = battle_of_genders(3)
+    ne = battle.find_support_equilibria([[0,1], [0,1], [0,1]])
+
+The results should be
+
+``[[{0: 0.750000000000000, 1: 0.250000000000000}, {0: 0.250000000000000, 1: 0.750000000000000}, {0: 0.500000000000000, 1: 0.500000000000000}]]``
 
 
 find_pure(self, simple=True)
@@ -60,7 +74,7 @@ Nash Equilibrium you got from find_all, it should return True.::
         profile =  [{0: 0.911437827766148, 1: 0.0885621722338523}, {0: 0.911437827766148, 1: 0.0885621722338523}, {0: 0.911437827766148, 1: 0.0885621722338523}]
         print(stag.is_nash(profile))
 
-Should print True. The pitfalls of ploating-point math may occasionally lead to this function giving the wrong answer.
+Should print True. The pitfalls of floating-point math may occasionally lead to this function giving the wrong answer.
 
 iesds(self)
 -----------
