@@ -70,10 +70,11 @@ if __name__ == '__main__':
 
     if args.nash or args.iesds:
         payoffs = _game_format_payoffs(payoffs)
-        print('payoffs', payoffs)
+        # print('payoffs', payoffs)
         agame = zero_sum_2_player(payoffs)
     if args.nash:
         all_nash = agame.find_all_equilibria()
+        print('nash')
         for anash in all_nash:
             print(anash)
             # anash looks like [{0: 4/9, 1: 5/9}, {0: 2/9, 1: 7/9}]
