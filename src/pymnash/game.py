@@ -11,6 +11,8 @@ from sympy.core import Number
 from sympy.core import Symbol
 from sympy.core import Expr
 from sympy.core.numbers import Float as FloatType
+from sympy.core.numbers import Rational as RationalType
+
 
 from .util import iterprob, iterindices, itersupport, iter_subset_combos, is_pure, dict_to_list, list_to_dict
 
@@ -411,7 +413,7 @@ class Game(object):
             for aprofile in support_result:
                 for val in aprofile.values():
                     #print('type', type(val))
-                    if type(val) == FloatType:
+                    if type(val) in (FloatType, RationalType):
                         if float(val) > 1 or float(val) <= 0:
                             return []
             #print(" a dict?? WFTT???")
@@ -536,3 +538,14 @@ class Game(object):
                    result.append(asol)
         return result
 
+def zero_sum_2_player(payoffs):
+    """Factory method to create a zero-sum 2-player gane from a simplified payoffs array"""
+    # payoffs is a two layer deep array, we will replace the innermost element with an array x, -x
+    newpayoffs = []
+    for elm in payoffs:
+        newelm = []
+        for inner in elm:
+            newelm.append([inner, -1 * inner])
+        newpayoffs.append(newelm)
+    game = Game(np.array(newpayoffs))
+    return game

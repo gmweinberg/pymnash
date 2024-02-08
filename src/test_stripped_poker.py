@@ -18,31 +18,49 @@ def get_stripped_poker_payoffs(revealed):
         for dealer in ("B", "F"):
             kings = sum([1 for ii in range(1, revealed + 1) if perm[ii] == 'K']) # seen by player
             seen[kings] += 1
-            for player in range(0, min(revealed + 2, 5)):
+            for student in range(0, min(revealed + 2, 5)):
                 if perm[0] == 'K':
-                    if kings >= player:
-                        payoffs[(dealer, player)] += 2
+                    if kings >= student:
+                        payoffs[(dealer, student)] += 2
                     else:
-                        payoffs[(dealer, player)] += 1
+                        payoffs[(dealer, student)] += 1
                 else:
                     if dealer == 'F':
-                        payoffs[(dealer, player)] -= 1
+                        payoffs[(dealer, student)] -= 1
                     else:
-                        if kings >= player:
-                            payoffs[(dealer, player)] -= 2
+                        if kings >= student:
+                            payoffs[(dealer, student)] -= 2
                         else:
-                            payoffs[(dealer, player)] += 1 # bluff succeeds
+                            payoffs[(dealer, student)] += 1 # bluff succeeds
     for key in payoffs:
         payoffs[key] = 14 * payoffs[key] / total
-    print("seen", seen)
+    # print("seen", seen)
     return payoffs
+
+def _game_format_payoffs(payoffs):
+    """Reformat the payoffs as returned above in a manner pleasing to zero_sum_2_player"""
+    student = set()
+    for key in payoffs.keys():
+        student.add(key[1])
+    student = sorted(list(student))
+    new = []
+    for dealer in 'B', 'F':
+        elm = []
+        new.append(elm)
+        for stud in student:
+            elm.append(payoffs[(dealer, stud)])
+    return new
+
+
 
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--revealed', help="number of cards revealed to player", default=1, type=int)
+    parser.add_argument('--revealed', help="number of cards revealed to student", default=1, type=int)
     parser.add_argument('--payoffs', help="show payoffs for strategies", action='store_true')
+    parser.add_argument('--nash', help="show nash equilibria strategies", action='store_true')
+    parser.add_argument('--iesds', help="show dominated strategies", action='store_true')
     args = parser.parse_args()
     payoffs = get_stripped_poker_payoffs(args.revealed)
 
@@ -50,3 +68,20 @@ if __name__ == '__main__':
         for key in payoffs:
             print(key, payoffs[key])
 
+    if args.nash or args.iesds:
+        payoffs = _game_format_payoffs(payoffs)
+        print('payoffs', payoffs)
+        agame = zero_sum_2_player(payoffs)
+    if args.nash:
+        all_nash = agame.find_all_equilibria()
+        for anash in all_nash:
+            print(anash)
+            # anash looks like [{0: 4/9, 1: 5/9}, {0: 2/9, 1: 7/9}]
+            profile = []
+            for elm in anash:
+                profile.append([(key, elm[key]) for key in elm])
+            print(agame.get_profile_payoffs(profile))
+    if args.iesds:
+        agame.iesds()
+        print('dominated strategies:')
+        print(agame.dominated)

@@ -108,6 +108,11 @@ if __name__ == '__main__':
         all_nash = agame.find_all_equilibria()
         for anash in all_nash:
             print(anash)
+            # anash looks like [{0: 4/9, 1: 5/9}, {0: 2/9, 1: 7/9}]
+            profile = []
+            for elm in anash:
+                profile.append([(key, elm[key]) for key in elm])
+            print(agame.get_profile_payoffs(profile))
 
 #./test_sample_games.py --game battle --support "[[0,1,2], [0,1,2], [0,1,2]]" # this will give unique probs
 #./test_sample_games.py --game battle --support "[[1,2], [1,2], [1,2]]"

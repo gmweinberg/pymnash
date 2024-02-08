@@ -59,7 +59,8 @@ def iterprob(actions):
         yield (oldpos, prob)
         
 def itersupport(support_actions):
-    """Generator for iterating through support_actions. Support_actions is a list of lists, first index in player. Inner list is a tuple, (player_action, probility).
+    """Generator for iterating through support_actions. Support_actions is a list of lists, first index in player.
+       Inner list is a tuple, (player_action, probility).
        probability is either a symbol or a number
        yields a tuple (player_actions, probability). Probability is either a number or a symbol expression."""
     pos = [0] * len(support_actions)
