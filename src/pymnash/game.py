@@ -20,11 +20,11 @@ class Game(object):
     """ A class for a multi-player normal form game."""
 
 
-    def __init__(self, payoffs, player_labels = None, action_labels = None):
+    def __init__(self, payoffs, player_labels = None, action_labels = None, verbose=False):
         """Payoffs is an np.array of floats, giving payouts to all players.
            If labels are omitted or incomplete we'll just fill them in with stringified ints."""
         # For now I'm not using player/action labels.
-        self.verbose = False
+        self.verbose = verbose
         if type(payoffs) != np.ndarray:
             raise Exception('Payoffs must be numpy array')
         self.payoffs = payoffs
@@ -260,12 +260,12 @@ class Game(object):
                                     pass
                                     # print('player', player, 'action0', action0, 'action1', action1, 'u0', ut0, 'u1', ut1)
                                 break
-                        if (not skip) and adominated:
+                        if adominated and action1 not in dominated[player]:
                              dominated[player].append(action1)
                              progress = True
                              real_progess = True
                              if self.verbose:
-                                  print('player', player, 'action', action1, 'dominated by', action0)
+                                  print('player', player, 'action', action1, 'dominated by', action0, 'appending1')
         return real_progress
 
     def iesds2(self):
@@ -287,10 +287,13 @@ class Game(object):
             progress = False
             for player in range(num_players):
                 for action_a in range(self.payoffs.shape[player]):
+                    skip = False
 
                     if action_a in dominated[player]:
                         continue
                     for action_b in range(self.payoffs.shape[player]):
+                        if skip:
+                            break
                         if action_b in dominated[player]:
                              continue
                         if action_b == action_a:
@@ -304,6 +307,8 @@ class Game(object):
                                 progress = True
                                 real_progress = True
                                 dominated[player].append(action_a)
+                                skip = True
+                                break
         return real_progress
 
     def _combo_dominates(self, player, strat_a, strat_b, strat_c):

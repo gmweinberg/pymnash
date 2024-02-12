@@ -35,7 +35,8 @@ def enumershape(shape):
 
 
 def iterprob(actions):
-    """Generator for iterating through an array of player action probabilities. Yields a tuple (player_actions, probability) where player_actions is a tuple showing
+    """Generator for iterating through an array of player action probabilities.
+       Yields a tuple (player_actions, probability) where player_actions is a tuple showing
         which player performed which action."""
     pos = [0] * len(actions)
     done = False
@@ -154,8 +155,32 @@ def dict_to_list(adict):
 def list_to_dict(alist):
    """Turn a list of list pairs into a dict"""
    return {elm[0]:elm[1] for elm in alist}
-    
-    
+
+def zero_sum_dict(adict):
+    """Given adict, return a new dict where the values x are replaced with [x, -x]"""
+    result = {key:[adict[key], -1 * adict[key]] for key in adict}
+    return result
+
+def payout_array_from_dict(payout_dict):
+    """Given a payout dict (key is tuple of player actions), return a payouts numpy array"""
+    for akey in payout_dict.keys():
+        allkeys = [set() for ii in range(len(akey))]
+    for akey in  payout_dict.keys():
+        for ii, action in enumerate(akey):
+            allkeys[ii].add(action)
+    lol = 'nope'
+    allkeys = [sorted(list(elm)) for elm in allkeys]
+    lol = 'nope'
+    shape = [len(akey) for akey in allkeys]
+    shape.append(len(shape))
+    shape = tuple(shape)
+    payoffs = numpy.zeros(shape)
+    for akey in product(*allkeys):
+        for ii, apayout in enumerate(payout_dict[tuple(akey)]):
+            pos = list(akey)
+            pos.append(ii)
+            payoffs[tuple(pos)] = apayout
+    return payoffs
 
 def silly(pos):
     """A silly test function that gives a result based on pos. Pos is a list of ints."""
