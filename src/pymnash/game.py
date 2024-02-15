@@ -543,6 +543,36 @@ class Game(object):
                    result.append(asol)
         return result
 
+    def get_payoffs_slice(self, x_player, y_player, others=None):
+        """x_player is a tuple player index, action0 index, action1 index, and optionally
+           more tuples indicating fractions of other actions by the x player.
+           y_player is just a player index.
+           others is a tuple indicating the actions of other players (leave None for two-player games).
+           Returns a list of lists with payoffs for the y player.
+           Outer tuple is y_player actions, inner tuple is y player payoffs.
+           This function is for plotting. Lines cross at the point of the x axis where the y player is
+           indifferent between 2 actions."""
+        where = [0] * len(self.payoffs.shape)
+        # todo: support mixed other actions by x_player
+        xind = x_player[0]
+        action0 = x_player[1]
+        action1 = x_player[2]
+        where[-1] = y_player # these are the payoffs we want.
+        if others:
+            for other in others: # todo: support mixed actions by other players
+                where[other][0] = other[1]
+        result = []
+        for ii in range(self.payoffs.shape[y_player]):
+            where[y_player] = ii
+            where0 = list(where)
+            where1 = list(where)
+            where0[xind] = action0
+            where1[xind] = action1
+            result.append([self.payoffs[tuple(where0)], self.payoffs[tuple(where1)]])
+        return result
+
+
+
 def zero_sum_2_player(payoffs):
     """Factory method to create a zero-sum 2-player gane from a simplified payoffs array"""
     # payoffs is a two layer deep array, we will replace the innermost element with an array x, -x

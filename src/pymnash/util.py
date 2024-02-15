@@ -161,6 +161,17 @@ def zero_sum_dict(adict):
     result = {key:[adict[key], -1 * adict[key]] for key in adict}
     return result
 
+def zero_sum_2_player_payoffs(payoffs):
+    """Convert payoffs array with just the results for one player to one for a two-player game."""
+    result = []
+    for elm in payoffs:
+        sresult = []
+        for sub in elm:
+            sresult.append([sub, -sub])
+        result.append(sresult)
+    return numpy.array(result)
+
+
 def payout_array_from_dict(payout_dict):
     """Given a payout dict (key is tuple of player actions), return a payouts numpy array"""
     for akey in payout_dict.keys():

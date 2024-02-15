@@ -5,7 +5,7 @@
 import numpy as np
 
 from pymnash.game import Game
-from pymnash.util import coords_from_pos, iterindices, enumershape
+from pymnash.util import coords_from_pos, iterindices, enumershape, zero_sum_dict, payout_array_from_dict
 from collections import defaultdict
 
 
@@ -219,6 +219,7 @@ def stag_hunt(n, m):
                 if hunters >= m:
                     payoffs[where] = 4 * n / hunters
     return Game(payoffs)
+
 
 __all__ = ['battle_of_genders', 'reducible', 'combo_reducible', 'dunderheads', 'prisoners_dilemma',
            'matching_pennies', 'how_low_dare_you_go', 'mixed_dom', 'chicken', 'stag_hunt']
