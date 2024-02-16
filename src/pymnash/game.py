@@ -87,9 +87,10 @@ class Game(object):
                 profile[player] = old_player_profile
                 if action_payoff > profile_payoffs[player] + self._wiggle:
                     if self.verbose:
-                        print("is_dominated profile {} is dominated for player {} by pure strategy {}".format(profile,
-                          player, anaction))
+                        print("is_dominated profile {} is dominated for player {} by pure strategy {} ({}, {})".format(profile,
+                          player, anaction, action_payoff, profile_payoffs[player]))
                     return True
+        lol = 'nope'
         return False
 
     def is_nash(self, profile):
@@ -412,6 +413,8 @@ class Game(object):
              #print("sympy threw an exception, here the equations ans symbols", all_equations, symbols_list)
              return []
         if not initial_solutions:
+            if self.verbose:
+                print('_get_indifference_probs support {} no indifference probs (no solutions)'.format(support))
             return []
         if type(initial_solutions) == dict:
             support_result = self._sympy_dict_to_profile(initial_solutions)
@@ -420,6 +423,8 @@ class Game(object):
                     #print('type', type(val))
                     if type(val) in (FloatType, RationalType):
                         if float(val) > 1 or float(val) <= 0:
+                            if self.verbose:
+                                 print('_get_indifference_probs support {} no indifference probs (oob)'.format(support))
                             return []
             #print(" a dict?? WFTT???")
             #print([initial_solutions])

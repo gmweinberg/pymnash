@@ -14,7 +14,11 @@ if __name__ == '__main__':
     parser.add_argument('--payoffs', help="show payoffs for strategies", action='store_true')
     parser.add_argument('--nash', help="show nash equilibria strategies", action='store_true')
     parser.add_argument('--iesds', help="show dominated strategies", action='store_true')
-    parser.add_argument('--plot', help="plot student actions vs dealer mix", action='store_true')
+    parser.add_argument('--plot-student', help="plot student actions vs dealer mix", action='store_true', 
+                        dest='plot_student')
+    parser.add_argument('--plot-dealer', help="plot dealer actions vs nash student mix", action='store_true', 
+                        dest='plot_dealer')
+    parser.add_argument('--file', help="file to save plot", default=None)
     args = parser.parse_args()
     payoffs = get_stripped_poker_payoffs(args.revealed)
     agame = zero_sum_2_player(payoffs)
@@ -39,31 +43,59 @@ if __name__ == '__main__':
         print(agame.dominated)
 
 
-    if args.plot:
-        if False:
-            fig0, ax0 = plt.subplots()
-            x_player = (0,0,1)
-            y_player = 0
-            ps = agame.get_payoffs_slice(x_player, y_player)
-            for aslice in ps:
-                ax0.plot([0, 1], aslice)
-            # plt.show()
-
-        if True:
-            fig1, ax1 = plt.subplots()
-            xind = 1
-            action0 = 0
-            action1 = 1
-            x_player = (xind, action0, action1)
-            y_player = 0
-            ps = agame.get_payoffs_slice(x_player, y_player)
-            for aslice in ps:
-                ax1.plot([0, 1], aslice)
-            if all_nash:
-                for anash in all_nash:
-                    if anash[xind].get(action1):
-                        pass
-                        ax1.plot([anash[xind][action1], anash[xind][action1]], [aslice[0], aslice[1]])
+    if args.plot_student:
+        if not all_nash:
+            all_nash = agame.find_all_equilibria() # there's just one
+        xind = 0
+        yind = 1
+        xactions = [key for key in all_nash[0][xind]]
+        yactions = [key for key in all_nash[0][yind]]
+        x_player = (xind, xactions[0], xactions[1])
+        ps = agame.get_payoffs_slice(x_player, yind)
+        fig0, ax0 = plt.subplots()
+        y_player =  1
+        min_y = max_y = None
+        for aslice in ps:
+            ax0.plot([0, 1], aslice)
+            if min_y is None or aslice[0] < min_y:
+                min_y = aslice[0]
+            if aslice[1] < min_y:
+                min_y = aslice[1]
+            if max_y is None or aslice[0] > max_y:
+                max_y = aslice[0]
+            if aslice[1] > max_y:
+                max_y = aslice[1]
+        ax0.plot([all_nash[0][xind][xactions[1]], anash[xind][xactions[1]]], [min_y, max_y])
         plt.show()
+        if args.file:
+            fig0.savefig(args.file, transparent=False)
+
+    if args.plot_dealer:
+        if not all_nash:
+            all_nash = agame.find_all_equilibria() # there's just one
+        xind = 1
+        yind = 0
+        xactions = [key for key in all_nash[0][xind]]
+        yactions = [key for key in all_nash[0][yind]]
+        x_player = (xind, xactions[0], xactions[1])
+        ps = agame.get_payoffs_slice(x_player, yind)
+        fig0, ax0 = plt.subplots()
+        y_player =  1
+        min_y = max_y = None
+        for aslice in ps:
+            ax0.plot([0, 1], aslice)
+            if min_y is None or aslice[0] < min_y:
+                min_y = aslice[0]
+            if aslice[1] < min_y:
+                min_y = aslice[1]
+            if max_y is None or aslice[0] > max_y:
+                max_y = aslice[0]
+            if aslice[1] > max_y:
+                max_y = aslice[1]
+        ax0.plot([all_nash[0][xind][xactions[1]], anash[xind][xactions[1]]], [min_y, max_y])
+        plt.show()
+        if args.file:
+            fig0.savefig(args.file, transparent=False)
+
 
 # ./test_stripped_poker.py --revealed 2 --nash --payoffs --iesds
