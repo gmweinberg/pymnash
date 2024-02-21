@@ -55,7 +55,7 @@ class Game(object):
                 self.player_labels, self.action_labels)
 
     def one_player_payoffs(self, others):
-        """Given strategy profiles of all the other players, fing the payoffs for
+        """Given strategy profiles of all the other players, find the payoffs for
            each strategy for the one remaining player.
            Others is a 3-deep list, players and strategy mix for each player.
         """
