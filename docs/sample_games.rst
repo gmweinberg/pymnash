@@ -21,6 +21,16 @@ be mixed equilibria for each possible combination of actions. Finally, for more 
 be pointelss equilibrai where the players fail to coordinate on an action, 
 but no one player can "fix" things because at least2 other players are failing to coordinate.
 
+Detente of the Genders
+----------------------
+
+``detente_of_genders(n,m)``
+
+Similar to battle of the genders, this allows players to score points without full cooperation.
+There are n total players with m distinct genders. Each gender has a preferred action. The score for each player is
+the number of players coordinating with that player minus 1. If the action of that player is that player's preferred 
+action, that player's score is multiplied by 2.
+
 Dunderheads
 -----------
 
