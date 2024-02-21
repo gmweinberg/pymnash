@@ -11,7 +11,7 @@ from collections import defaultdict
 
 def battle_of_genders(n):
     """A generalization of the 'battle of the sexes' game which supports any number of genders.
-    The number of possible moves for each player iss equal to the total number of players.
+    The number of possible moves for each player is equal to the total number of players.
     All players get zero payoff unless they all coordinate on a choice, each player has a particular favorite choice
     but all players get something as long as they all coordinate."""
     # We know there is one pure strategy per player, with all players playing that player's favorite.
@@ -28,6 +28,30 @@ def battle_of_genders(n):
             else:
                  loc[kk] = 1
     return Game(boga)
+
+def detente_of_genders(n, m):
+    """Similar to battle of genders, there are n plyers total with m types of players
+       (and m actions per player)
+       Instead of requiring all players to coordinate, the score for all players choosing the same action
+       is 2 * (c -1) if it is their preferred action and (c -1) if it is not (so any player
+       choosing a unique action scores zero)."""
+    shape = [m] * n # n players, m moves per player
+    shape.append(n) # n player payoffs
+    payoffs = np.zeros(tuple(shape), dtype=float)
+    for pos in iterindices(shape[:-1]):
+        counts = [0] * m
+        for pospos in pos:
+            counts[pospos] +=1
+        for ii in range(n):
+            type_ = int(ii/m)
+            action = pos[ii]
+            action_score = counts[action] - 1
+            if action == type_:
+                action_score *= 2
+            there = list(pos)
+            there.append(ii)
+            payoffs[tuple(there)] = action_score
+    return Game(payoffs)
 
 def reducible(n):
     """A game just to test the iterated elimination of strictly dominated strategies. """
@@ -221,6 +245,7 @@ def stag_hunt(n, m):
     return Game(payoffs)
 
 
-__all__ = ['battle_of_genders', 'reducible', 'combo_reducible', 'dunderheads', 'prisoners_dilemma',
+__all__ = ['battle_of_genders', 'detente_of_genders', 'reducible', 'combo_reducible', 
+           'dunderheads', 'prisoners_dilemma',
            'matching_pennies', 'how_low_dare_you_go', 'mixed_dom', 'chicken', 'stag_hunt']
 

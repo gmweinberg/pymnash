@@ -10,7 +10,7 @@ from pymnash.sample_games import *
 game_names = {"battle_of_genders":battle_of_genders, "reducible":reducible, "combo_reducible":combo_reducible,
                "dunderheads":dunderheads, "prisoners_dilemma":prisoners_dilemma, "matching_pennies":matching_pennies,
               "how_low_dare_you_go":how_low_dare_you_go, "mixed_dom":mixed_dom, 'chicken':chicken,
-              'stag_hunt':stag_hunt}
+              'stag_hunt':stag_hunt, 'detente_of_genders':detente_of_genders}
 
 
 def get_game_fun(name):
@@ -54,6 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--game', help="game name", default='battle_of_genders')
     parser.add_argument('--pure', action='store_true', help='find pure strategy equilibria')
     parser.add_argument('--payoffs', help='show payoff matrix', action='store_true')
+    parser.add_argument('--others', help='show payoffs for one player given payoffs of others')
     parser.add_argument('--profile', help='test if profile is equilibrium')
     parser.add_argument('--canned', help='test if canned profile is equilibrium', action='store_true')
     parser.add_argument('--verbose', action='store_true')
@@ -65,7 +66,7 @@ if __name__ == '__main__':
     agame = None
     profile = None
     game_fun = get_game_fun(args.game)
-    if game_fun in [how_low_dare_you_go, mixed_dom, stag_hunt]:
+    if game_fun in [how_low_dare_you_go, mixed_dom, stag_hunt, detente_of_genders]:
         agame = game_fun(args.players, args.m)
     else:
         agame = game_fun(args.players)
@@ -74,6 +75,9 @@ if __name__ == '__main__':
         print('payoffs:')
         print(repr(agame.payoffs))
         print('')
+    if args.others:
+        others = literal_eval(args.others)
+        print('one_player', agame.one_player_payoffs(others))
     if args.pure:
         print('pure:')
         print(repr(agame.find_pure()))
@@ -117,3 +121,5 @@ if __name__ == '__main__':
 #./test_sample_games.py --game battle --support "[[0,1,2], [0,1,2], [0,1,2]]" # this will give unique probs
 #./test_sample_games.py --game battle --support "[[1,2], [1,2], [1,2]]"
 #./test_sample_games.py --game battle --players 4 --support "[[1,2], [1,2], [0,3], [0, 3]]" # this should give lines of solutions.
+
+#./test_sample_games.py --game detente --players 4 --m 2 --others "[[1, [[0,1]]], [2, [[0, 0.5], [1, 0.5]]], [3, [[0, 0.5], [1, 0.5]]]]"

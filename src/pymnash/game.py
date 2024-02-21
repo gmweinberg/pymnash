@@ -54,6 +54,47 @@ class Game(object):
          return 'payoffs {}\nplayer_labels {}\naction_labels {}'.format(self.payoffs,
                 self.player_labels, self.action_labels)
 
+    def one_player_payoffs(self, others):
+        """Given strategy profiles of all the other players, fing the payoffs for
+           each strategy for the one remaining player.
+           Others is a 3-deep list, players and strategy mix for each player.
+        """
+        players = set([i for i in range(self.player_count)])
+        for elm in others:
+            players.remove(elm[0])
+        if len(players) != 1:
+            raise Exception('Invalid others')
+        key_player = list(players)[0]
+        key_payoffs = [0] * self.payoffs.shape[key_player]
+        frac = 1
+        level = 0
+        where = [0] * (len(self.payoffs.shape) - 1)
+        self._one_player_payoffs(key_player, key_payoffs, frac, others, where, level)
+        return key_payoffs
+
+
+    def _one_player_payoffs(self, key_player, key_payoffs, frac, others, where, level):
+        """Internal recursive function for one_player_payoffs. Modifies key_payoffs in place."""
+        if level == len(others):# never gets called?
+            return
+        elm = others[level]
+        this_player = elm[0]
+        for sub in elm[1]:
+            action = sub[0]
+            newfrac = frac * sub[1]
+            newwhere = deepcopy(where)
+            newwhere[this_player] = action
+            if level == len(others) - 1:
+                for key_action in range(self.payoffs.shape[key_player]):
+                    there = deepcopy(newwhere)
+                    there[key_player] = key_action
+                    there.append(key_player)
+                    this_payoff = newfrac * self.payoffs[tuple(there)]
+                    key_payoffs[key_action] += this_payoff
+            else:
+                self._one_player_payoffs(key_player, key_payoffs, newfrac, others, newwhere, level + 1)
+
+
     def eq(self, val1, val2):
         """Check whether val1 and val2 are 'close enough' to count as equal."""
         return val1 + self._wiggle > val2 and val2 + self._wiggle > val1
@@ -575,6 +616,9 @@ class Game(object):
             where1[xind] = action1
             result.append([self.payoffs[tuple(where0)], self.payoffs[tuple(where1)]])
         return result
+
+
+
 
 
 
