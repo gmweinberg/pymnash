@@ -4,4 +4,4 @@ __pycache__/
 dist/
 docs/_build
 note
-crap
+crap*

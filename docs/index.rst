@@ -13,6 +13,7 @@ Welcome to pymnash's documentation!
    Usage <usage>
    Sample Games <sample_games>
    Game Methods <game_methods>
+   Utilities <utilities>
 
 
 

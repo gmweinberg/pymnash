@@ -38,21 +38,28 @@ class Game(object):
             self.player_labels = list(player_labels)
             for ii in range(player_count - len(player_labels)):
                 self.player_labels.append(str(ii + len(player_labels)))
-        action_count = payoffs.shape[0] # TODO: support different action lables for different players
-        if action_labels is None:
-             self.action_labels = [str(ii) for ii in range(action_count)]
-        elif len(action_labels) >= action_count:
-            self.action_labels = list(action_labels[0:action_count])
-        else:
-            self.action_labels = list(action_labels)
-            for ii in range(action_count - len(action_labels)):
-                self.action_labels.append(str(ii + len(action_labels)))
+        self.set_action_labels(action_labels)
         self._wiggle = 0.000001
         self.dominated = [[] for ii in range(self.num_players())]
 
     def __repr__(self):
          return 'payoffs {}\nplayer_labels {}\naction_labels {}'.format(self.payoffs,
                 self.player_labels, self.action_labels)
+
+    def set_action_labels(self, action_labels):
+        """Action labels is a list of lists, action labels for each player.
+           If the passed action_labels is None, just use the action index.
+           If a simple list is passed, use the same actions for all players."""
+        self.action_labels = []
+        if action_labels is None:
+            shape = self.payoffs.shape[:-1]
+            self.action_labels = [[iii for iii in range(shape[ii])] for ii in range(len(shape))]
+        else:
+            if type(action_labels[0]) in (list, tuple):
+                self.action_labels = action_labels
+            else:
+                self.action_labels = [action_labels for ii in range(len(self.payoffs.shape[:-1]))]
+
 
     def one_player_payoffs(self, others):
         """Given strategy profiles of all the other players, find the payoffs for
@@ -201,7 +208,7 @@ class Game(object):
         return is_nash
 
     def num_actions(self, player):
-        """Return the number of available actions for the player with given index. Returns an int."""
+        """Return the number of availabel actions for the player with given index. Returns an int."""
         return self.payoffs.shape[player]
 
     def num_players(self):
@@ -235,7 +242,17 @@ class Game(object):
             for sub in elm:
                 aresult.append({sub:1.0})
             result.append(aresult)
-        return result
+        return self._sub_action_labels(result)
+
+    def _sub_action_labels(self, old_result):
+        """Convert the index of player actions to the action name for results list."""
+        result = []
+        for anold in old_result:
+            aresult = [] # list of player action dicts
+            result.append(aresult)
+            for ii, pa in enumerate(anold):
+                aresult.append({self.action_labels[ii][key]:pa[key] for key in pa})
+            return result
 
 
     def iesds(self):
@@ -567,7 +584,7 @@ class Game(object):
                    listy = [dict_to_list(elm) for elm in carnate]
                    if not self.is_dominated(listy):
                        result.append(asol)
-        return result
+        return self._sub_action_labels(result)
 
     def find_support_equilibria(self, support):
         """Similar to above, but just find the nash equilibria with the given support"""
@@ -618,10 +635,6 @@ class Game(object):
         return result
 
 
-
-
-
-
 def zero_sum_2_player(payoffs):
     """Factory method to create a zero-sum 2-player gane from a simplified payoffs array"""
     # payoffs is a two layer deep array, we will replace the innermost element with an array x, -x
@@ -632,4 +645,10 @@ def zero_sum_2_player(payoffs):
             newelm.append([inner, -1 * inner])
         newpayoffs.append(newelm)
     game = Game(np.array(newpayoffs))
+    return game
+
+def game_from_payoffs(payoffs):
+    """Factory method to create a game from a payoffs array"""
+    payoffs = np.array(payoffs)
+    game = Game(payoffs)
     return game

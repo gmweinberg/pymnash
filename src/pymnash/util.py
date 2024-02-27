@@ -171,6 +171,15 @@ def zero_sum_2_player_payoffs(payoffs):
         result.append(sresult)
     return numpy.array(result)
 
+def symmetric_2_player_payoffs(payoffs):
+    """For a 2-player game, create a symmetric payoffs array given the payoffs for one player."""
+    result = numpy.zeros((len(payoffs), len(payoffs), 2))
+    for ii, elm in enumerate(payoffs):
+        for iii, sub in enumerate(elm):
+            result[(ii, iii, 0)] = sub
+            result[(iii, ii, 1)] = sub
+    return result
+
 
 def payout_array_from_dict(payout_dict):
     """Given a payout dict (key is tuple of player actions), return a payouts numpy array"""
