@@ -252,7 +252,7 @@ class Game(object):
             result.append(aresult)
             for ii, pa in enumerate(anold):
                 aresult.append({self.action_labels[ii][key]:pa[key] for key in pa})
-            return result
+        return result
 
 
     def iesds(self):

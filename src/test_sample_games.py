@@ -10,7 +10,10 @@ from pymnash.sample_games import *
 game_names = {"battle_of_genders":battle_of_genders, "reducible":reducible, "combo_reducible":combo_reducible,
                "dunderheads":dunderheads, "prisoners_dilemma":prisoners_dilemma, "matching_pennies":matching_pennies,
               "how_low_dare_you_go":how_low_dare_you_go, "mixed_dom":mixed_dom, 'chicken':chicken,
-              'stag_hunt':stag_hunt, 'detente_of_genders':detente_of_genders}
+              'stag_hunt':stag_hunt, 'detente_of_genders':detente_of_genders, 'all_pay_auction':all_pay_auction}
+
+m_games = [how_low_dare_you_go, mixed_dom, stag_hunt, detente_of_genders, all_pay_auction,
+          ]
 
 
 def get_game_fun(name):
@@ -66,7 +69,7 @@ if __name__ == '__main__':
     agame = None
     profile = None
     game_fun = get_game_fun(args.game)
-    if game_fun in [how_low_dare_you_go, mixed_dom, stag_hunt, detente_of_genders]:
+    if game_fun in m_games:
         agame = game_fun(args.players, args.m)
     else:
         agame = game_fun(args.players)

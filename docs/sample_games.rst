@@ -66,6 +66,15 @@ the range 0 to m, the winner is the player with the lowest unique pick.
 
 It turns out you don't need many players / options before solving this game in the general sense becomes intractable.
 
+All Pay Auction
+------------------
+
+``all_pay_auction(n,m)``
+
+In this game all players may bid integer amounts 0-m. There is a prize amount (1.5m for 2 players, 2m for more)
+which is split among all players who bid the most. In addition all players lose their bids (so for losers
+the payoff is negative their bid, for winners the payoff is their share of the prize minus their bid).
+
 Stag Hunt
 ----------
 

@@ -244,8 +244,43 @@ def stag_hunt(n, m):
                     payoffs[where] = 4 * n / hunters
     return Game(payoffs)
 
+def all_pay_auction(n, m):
+    """In this discrete version of all_pay_auction, each of n players can bid an integer amount
+       from 0 to m. The prize is split between all players who bid the maximum.
+       The prize must be more than the maximum bid for one player and less than the total
+       bid to keep the game interesting, I will make it 1.5 * m for 2 players and 2 * m for more"""
+    if n == 2:
+        prize = 1.5 * m
+    else:
+        prize = 2 * m
+    payoffs = np.zeros(tuple([m + 1] * n + [n]), dtype=float)
+    shape = payoffs.shape[:-1]
+    for  pos in iterindices(shape):
+        max_bid = None
+        for ii, elm in enumerate(pos):
+            if max_bid is None or elm > max_bid:
+                max_bid = elm
+                winners = [ii]
+            elif elm == max_bid:
+                winners.append(ii)
+        lol = 'nope'
+        for ii in range(n):
+            where = list(pos)
+            where.append(ii)
+            if ii in winners:
+                payoffs[tuple(where)] = prize / len(winners) - where[ii]
+            else:
+                payoffs[tuple(where)] = -where[ii]
+    return Game(payoffs)
+
+def simultaneous_poker(n, m):
+    """This isn;t happeneing today."""
+    raise Exception("Not implemented")
+
+
 
 __all__ = ['battle_of_genders', 'detente_of_genders', 'reducible', 'combo_reducible', 
            'dunderheads', 'prisoners_dilemma',
-           'matching_pennies', 'how_low_dare_you_go', 'mixed_dom', 'chicken', 'stag_hunt']
+           'matching_pennies', 'how_low_dare_you_go', 'mixed_dom', 'chicken', 'stag_hunt',
+           'all_pay_auction']
 
