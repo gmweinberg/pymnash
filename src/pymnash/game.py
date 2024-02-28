@@ -236,23 +236,18 @@ class Game(object):
         if simple:
             return eq
         # else reformat to have the same output style as find_all_equilibria.
-        result = []
         for elm in eq:
             aresult = []
             for sub in elm:
                 aresult.append({sub:1.0})
-            result.append(aresult)
-        return self._sub_action_labels(result)
+            yield aresult
 
     def _sub_action_labels(self, old_result):
         """Convert the index of player actions to the action name for results list."""
-        result = []
-        for anold in old_result:
-            aresult = [] # list of player action dicts
-            result.append(aresult)
-            for ii, pa in enumerate(anold):
-                aresult.append({self.action_labels[ii][key]:pa[key] for key in pa})
-        return result
+        aresult = [] # list of player action dicts
+        for ii, pa in enumerate(old_result):
+            aresult.append({self.action_labels[ii][key]:pa[key] for key in pa})
+        return aresult
 
 
     def iesds(self):
@@ -559,9 +554,8 @@ class Game(object):
 
 
     def find_all_equilibria(self):
-        """Attempt to find all nash equilibria for a game. Returns a list of dicts, keys are symbols,
+        """Attempt to find all nash equilibria for a game. Yields a list of dicts, keys are symbols,
            values are probabilities (numbers or symbols)."""
-        result = []
         action_shape = self.payoffs.shape[:-1]
         possible_actions = [list(range(player_actions)) for player_actions in action_shape]
         #print(possible_actions)
@@ -572,7 +566,7 @@ class Game(object):
                profile = [[[player_action[0], 1]] for player_action in acombo]
                if not self.is_dominated(profile):
                     profile_dict = [list_to_dict(player_profile) for player_profile in profile]
-                    result.append(profile_dict)
+                    yield self._sub_action_labels(profile_dict)
            else:
                #print("checking combo", acombo)
                combo_solutions = self._get_indifference_probs(acombo)
@@ -583,8 +577,7 @@ class Game(object):
                    carnate = self._carnate_profile(asol)
                    listy = [dict_to_list(elm) for elm in carnate]
                    if not self.is_dominated(listy):
-                       result.append(asol)
-        return self._sub_action_labels(result)
+                       yield self._sub_action_labels(asol)
 
     def find_support_equilibria(self, support):
         """Similar to above, but just find the nash equilibria with the given support"""

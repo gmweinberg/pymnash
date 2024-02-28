@@ -273,11 +273,6 @@ def all_pay_auction(n, m):
                 payoffs[tuple(where)] = -where[ii]
     return Game(payoffs)
 
-def simultaneous_poker(n, m):
-    """This isn;t happeneing today."""
-    raise Exception("Not implemented")
-
-
 
 __all__ = ['battle_of_genders', 'detente_of_genders', 'reducible', 'combo_reducible', 
            'dunderheads', 'prisoners_dilemma',
