@@ -87,10 +87,10 @@ def combo_reducible(n):
 def dunderheads(n):
     """Multi-player High-Low. Similar to battle of genders, except there are only two options and all players
         have the same preferrred option."""
-    # There are two pure nash equilibria, the 'smart' on where evryone picks the preferred option, and the
+    # There are two pure nash equilibria, the 'smart' one where everyone picks the preferred option, and the
     # 'dunderheaded' one where everyone picks the option they don't like.
-    # There should also be a 'super-dunderheaded' solutions where all player mix their picks.
-    # The probability of pcking the dunderheaded option will be higher, so the higher chance of getting a match
+    # There should also be 'super-dunderheaded' solutions where all player mix their picks.
+    # The probability of picking the dunderheaded option will be higher, so the higher chance of getting a match
     # exactly compensates for the lower payoff.
     payoffs = np.zeros(tuple([2] * n + [n]), dtype=float)
     for indices in iterindices(payoffs.shape):
