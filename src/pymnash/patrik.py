@@ -5,6 +5,7 @@
    guys is named Patrik"""
 from math import isqrt
 import numpy as np
+from .game import Game 
 from .node import Node
 from .nash_dag import Nash_DAG
 
@@ -83,11 +84,7 @@ class Patrik(Nash_DAG):
                 for iv in range(2):
                     game_array[ii][iii][iv] = nodes[ii * stride + iii].scores[iv]
         thegame = Game(game_array)
-        equilibria = [elm for elm in thegame.find_all_equilibria()]
-        if len(equilibria) != 1:
-            raise Exception("multiple equilibria!")
-        equilibrium = equilibria[0]
-        print(equilibrium)
+        return thegame
 
 def nodename(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
     """Helper function for creating nodename from human-readable values"""

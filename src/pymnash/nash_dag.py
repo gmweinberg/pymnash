@@ -46,7 +46,7 @@ class Nash_DAG:
 
 
     def create_game(self, nodes):
-        """Create a game from a set of nodes. The nodes must already have
+        """Create a game from a list of nodes. The nodes must already have
            scores before this node is called."""
         raise Exception("Not implemented")
 
@@ -56,18 +56,20 @@ class Nash_DAG:
         if node.name not in self.nodes:
             raise Exception("Unknown node {}".format(node.name))
         childs = 0
+        nodes = []
         for name in self.get_successors(node):
             child = self.nodes[name]
             if child.scores is None:
                 return False
             childs += 1
+            nodes.append(child)
         if childs == 1:
             node.scores = child.scores
-            print("just 1 child") 
+            # print("just 1 child") 
             return True
         thegame = self.create_game(nodes)
         equilibria = [equilibrium for equilibrium in thegame.find_all_equilibria()]
         if len(equilibria) != 1:
             raise Exception("This only works with a unique nash equilibrium")
-        equilibrium = equilibria[1]
+        equilibrium = equilibria[0]
         print(equilibrium)
