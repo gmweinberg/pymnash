@@ -19,12 +19,12 @@ class Nash_DAG:
         self.analyzed = False
 
 
-    def generate_node(self, name):
-        """Create a new node with the given name and add it to the dictionary.
+    def generate_node(self, key):
+        """Create a new node with the given key and add it to the dictionary.
            Subclasses of Nash_DAG should extend this method by correctly setting terminal
            and setting scores on terminal nodes."""
-        node_ = Node(name)
-        self.nodes[name] = node_
+        node_ = Node(key)
+        self.nodes[key] = node_
         return node_
 
     def get_successors(self, node):
@@ -33,15 +33,15 @@ class Nash_DAG:
 
 
     def generate_subgraph(self, node):
-        for name in self.get_successors(node):
-            if name in self.nodes:
-                self.nodes[name].parents.add(node.name)
+        for key in self.get_successors(node):
+            if key in self.nodes:
+                self.nodes[key].parents.add(node.key)
             else:
-                newnode = self.generate_node(name)
-                newnode.parents.add(node.name)
-                self.nodes[name] = newnode
+                newnode = self.generate_node(key)
+                newnode.parents.add(node.key)
+                self.nodes[key] = newnode
                 if self.verbose:
-                    print("new nodename", newnode.name)
+                    print("new key", newnode.key)
                 self.generate_subgraph(newnode)
 
 
@@ -53,12 +53,12 @@ class Nash_DAG:
     def set_scores(self, node)->bool:
         """Set the scores on this node if all its child nodes have scores.
            Returns a boolean indicating scores were set."""
-        if node.name not in self.nodes:
-            raise Exception("Unknown node {}".format(node.name))
+        if node.key not in self.nodes:
+            raise Exception("Unknown node {}".format(node.key))
         childs = 0
         nodes = []
-        for name in self.get_successors(node):
-            child = self.nodes[name]
+        for key in self.get_successors(node):
+            child = self.nodes[key]
             if child.scores is None:
                 return False
             childs += 1

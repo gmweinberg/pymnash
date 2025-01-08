@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from argparse import ArgumentParser
 from ast import literal_eval
-from pymnash.patrik import Patrik, nodename, describe_node
+from pymnash.patrik import Patrik, get_key, describe_node
 from pymnash.node import Node
 
 if __name__ == '__main__':
@@ -24,8 +24,8 @@ if __name__ == '__main__':
         for name in thegame.get_successors(node1):
             print(name, describe_node(name))
     if args.score:
-        nodename = literal_eval(args.score)
-        node2 = thegame.nodes[nodename]
+        key = literal_eval(args.score)
+        node2 = thegame.nodes[key]
         didit = thegame.set_scores(node2)
         if not didit:
             print("Initial attempt failed, setting child scores")

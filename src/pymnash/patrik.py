@@ -12,26 +12,26 @@ from .nash_dag import Nash_DAG
 class Patrik(Nash_DAG):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        nodename = (None, None, None)
-        node = self.generate_node(nodename)
+        key = (None, None, None)
+        node = self.generate_node(key)
         self.generate_subgraph(node)
 
-    def generate_node(self, name):
+    def generate_node(self, key):
         terminal = False
         scores = None
-        if name[0] is not None:
+        if key[0] is not None:
             terminal = True
-            if name[0] == 0:
+            if key[0] == 0:
                 scores = [1, 0]
             else:
                 scores = [0, 1]
-        node_ = Node(name, terminal=terminal, scores=scores)
-        self.nodes[name] = node_
+        node_ = Node(key, terminal=terminal, scores=scores)
+        self.nodes[key] = node_
         return node_
 
 
     def get_successors(self, node):
-        """For this game the node name is a tuple.
+        """For this game the node key is a tuple.
         The element 0 is the winner at this node, 0, 1, or None. 
            Unless it is none, there are no more elements.
         The element 1 is the value chosen by the coin player.
@@ -40,24 +40,24 @@ class Patrik(Nash_DAG):
         Element 3 is number of guesses made (prior to node)
         Element 4 is a boolean indicating 0 has been guessed
         Element 5 is lowest int that could have been played at this node"""
-        name = node.name
-        if name[0] is not None: # terminal nodes
+        key = node.key
+        if key[0] is not None: # terminal nodes
             return []
         result = []
-        if name[1] is None: # special root node is (None, None, None)
+        if key[1] is None: # special root node is (None, None, None)
             for cp in range(6):
                 for gp in range(6):
                     result.append((None, cp, gp, 0, False, 1))
             return result
-        coin = name[1]
-        guesser = name[2]
+        coin = key[1]
+        guesser = key[2]
         if coin == guesser:
             return [(1,)]
-        guesses_made = name[3]
+        guesses_made = key[3]
         if guesses_made == 2:
             return [(0,)]
-        zero_gone = name[1] == 0 or name[4]
-        min_guess = name[5]
+        zero_gone = key[1] == 0 or key[4]
+        min_guess = key[5]
         if coin is not None and coin >= min_guess:
             min_guess = coin + 1
         
@@ -70,8 +70,8 @@ class Patrik(Nash_DAG):
         guesses.append(5) # can always guess 5, even if already guessed
         for cp in guesses:
             for gp in guesses:
-                newname = (None, cp, gp, guesses_made + 1, zero_gone,  min_guess)
-                result.append(newname)
+                newkey = (None, cp, gp, guesses_made + 1, zero_gone,  min_guess)
+                result.append(newkey)
         return result
 
     def create_game(self, nodes):
@@ -86,28 +86,26 @@ class Patrik(Nash_DAG):
         thegame = Game(game_array)
         return thegame
 
-def nodename(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
-    """Helper function for creating nodename from human-readable values"""
+def get_key(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
+    """Helper function for creating jkey from human-readable values"""
     if coin == guesser:
         return (1,)
     if guesses == 2:
         return (0,)
     return (None, coin, guesser, guesses, zero_gone, min_guess)
 
-def describe_node(name):
-    """Helper function for showing nodename as human-readable values"""
-    if name[0] is not None:
-        if name[0] == 0:
+def describe_node(key):
+    """Helper function for showing key as human-readable values"""
+    if key[0] is not None:
+        if key[0] == 0:
             return "coin wins"
         else:
             return "guesser wins"
-    if name[1] is None:
+    if key[1] is None:
         return "root node"
-    coin =  name[1]
-    guesser = name[2]
-    guesses = name[3]
-    zero_gone = name[4]
-    min_guess = name[5]
-    return "coin={};guesser={};guesses={};zerogone={};min_guess={}".format(*name[1:])
-
-
+    coin =  key[1]
+    guesser = key[2]
+    guesses = key[3]
+    zero_gone = key[4]
+    min_guess = key[5]
+    return "coin={};guesser={};guesses={};zerogone={};min_guess={}".format(*key[1:])
