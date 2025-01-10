@@ -35,7 +35,7 @@ class Patrik(Nash_DAG):
         node_.guesser = key[1]
         node_.prior_guesses = key[2]
         node_.zero_played = key[3]
-        node_.min_guess = key[4] # minimum nozero guess that could have been played here
+        node_.min_guess = key[4] # minimum nozero guess that can be played at future nodes
         if node_.coin == node_.guesser:
             node_.terminal = True
             node_.scores = [0, 1]
@@ -79,7 +79,7 @@ class Patrik(Nash_DAG):
 
 
 def get_key(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
-    """Helper function for creating jkey from human-readable values"""
+    """Helper function for creating key from human-readable values"""
     if coin == guesser:
         return (1,)
     if guesses == 2:

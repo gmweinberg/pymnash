@@ -27,7 +27,9 @@ if __name__ == '__main__':
     node = thegame.nodes[key]
 
     if args.childs:
-        pass
+        print("child nodes")
+        for key in thegame.get_child_nodes(node):
+            print(key)
 
         #nodename = literal_eval(args.childs)
         #node1 = thegame.nodes[nodename]

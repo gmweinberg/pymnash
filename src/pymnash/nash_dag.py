@@ -37,10 +37,14 @@ class Nash_DAG:
         """For each player generate a list of actions that can be generated from this node."""
         raise Exception("Not implemented")
 
-    def get_child(self, node, player_actions) -> tuple:
-        """Find the node that results when players lay the given actions at the
-           given node. Return the key of the child node."""
-        raise Exception("Not implemented""")
+    def get_child_nodes(self, node) -> list:
+        """Return a list of keys of child nodes of the given node."""
+        result = []
+        all_player_actions = self.get_player_actions(node)
+        for actions in cartesian_product(*all_player_actions):
+            key = self.get_child(node, actions)
+            result.append(key)
+        return result
 
 
     def generate_subgraph(self, node):
