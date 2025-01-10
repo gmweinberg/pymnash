@@ -18,6 +18,7 @@ class Patrik(Nash_DAG):
         node = self.generate_node(key)
         self.generate_subgraph(node)
 
+
     def generate_node(self, key):
         if self.verbose:
             print("generating node for key {}".format(key))
@@ -44,6 +45,7 @@ class Patrik(Nash_DAG):
                 node_.scores = [1, 0]
         return node_
 
+
     def get_player_actions(self, node_):
         if node_.terminal:
             return [[], []]
@@ -61,6 +63,7 @@ class Patrik(Nash_DAG):
         guesses.append(5)
         return [guesses, guesses]
 
+
     def get_child(self, node_, player_actions):
         if player_actions[0] == 0:
             zero_played = True
@@ -74,17 +77,6 @@ class Patrik(Nash_DAG):
             min_guess = 5
         return ((player_actions[0], player_actions[1], node_.prior_guesses + 1, zero_played, min_guess))
 
-    def create_game(self, nodes):
-        """Create the pymnash game from the nodes indicating possible succesor states.
-           The subgame nodes must already be scored for us to calculate this game scores."""
-        stride = isqrt(len(nodes))
-        game_array = np.zeros((stride, stride, 2))
-        for ii in range(stride):
-            for iii in range(stride):
-                for iv in range(2):
-                    game_array[ii][iii][iv] = nodes[ii * stride + iii].scores[iv]
-        thegame = Game(game_array)
-        return thegame
 
 def get_key(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
     """Helper function for creating jkey from human-readable values"""
@@ -93,6 +85,7 @@ def get_key(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
     if guesses == 2:
         return (0,)
     return (None, coin, guesser, guesses, zero_gone, min_guess)
+
 
 def describe_key(key):
     """Helper function for showing key as human-readable values"""

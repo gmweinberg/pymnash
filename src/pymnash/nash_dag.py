@@ -8,8 +8,10 @@
 """
 from itertools import product as cartesian_product
 import numpy as np
+from .util import dict_to_list
 from .game import Game
 from .node import Node
+#import pdb; pdb.set_trace()
 
 class Nash_DAG:
     def __init__(self, *args, **kwargs):
@@ -100,31 +102,30 @@ class Nash_DAG:
                 game_array[tuple(where)] = child.scores[ii]
         thegame = Game(game_array)
         equilibria = [equilibrium for equilibrium in thegame.find_all_equilibria()]
-        # In principle we can still set scores with multiple n.e. as long as all the n.e.
-        # give the same returns to all players.
-        if len(equilibria) != 1:
-            print("equilibria", equilibria)
-            raise Exception("This only works with a unique nash equilibrium")
-        equilibrium = equilibria[0]
+        profile_payoffs = None
+        # breakpoint()
+        for profile in equilibria:
+            profile = thegame.carnate_profile(profile)
+            profile_list = [dict_to_list(adict) for adict in profile]
+            apayoffs  = thegame.get_profile_payoffs(profile_list)
+            if profile_payoffs is None:
+                profile_payoffs = apayoffs
+            else:
+                if not apayoffs == profile_payoffs:
+                    print("disaster!")
+                    print("node", node.key, "equilibria", equilibria, profile_payoffs, apayoffs)
+                    raise Exception("This only works when all equilibria have the same payoffs")
+
         if self.verbose:
-            print("node", node.key, "equilibrium", equilibrium)
+            print("node", node.key, "profile", profile)
         player_probs = []
-        for actions, probs in zip(all_player_actions, equilibrium):
+        for actions, probs in zip(all_player_actions, profile):
             pa_dict = {}
             for new_key, old_key in zip(actions, range(len(probs))):
+                if old_key not in probs:
+                    continue
                 pa_dict[new_key] = probs[old_key]
                 player_probs.append(pa_dict)
         node.playerprobs = player_probs
-        # we should factor something like tge below into game
-        scores = [0] * len(all_player_actions)
-        key_sets = [d.keys() for d in equilibrium]
-        for keys in cartesian_product(*key_sets):
-            values = tuple(equilibrium[i][k] for i, k in enumerate(keys))
-            mult = np.prod(values)
-            for ii in range(len(all_player_actions)):
-                where = list(keys)
-                where.append(ii)
-                scores[ii] += mult * game_array[tuple(where)]
-        node.scores = scores
-
+        node.scores = profile_payoffs
         return True

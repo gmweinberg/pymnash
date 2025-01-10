@@ -533,7 +533,7 @@ class Game(object):
                         profile[player][action] = arg
         return profile
 
-    def _carnate_profile(self, profile):
+    def carnate_profile(self, profile):
         """Given a support dict which may contain sympy expressions as values, return a suport with float values."""
         # We need this to evaluate the payoff to a player of a strategy profile that is an expression rather
         # than a number e.g. player 0 will play actions 0 and 1 in any probabilities that add to 1.
@@ -574,7 +574,7 @@ class Game(object):
                    # print('asol', asol)
                    #listy = [dict_to_list(psol) for psol in asol]
                    #print('psol', psol)
-                   carnate = self._carnate_profile(asol)
+                   carnate = self.carnate_profile(asol)
                    listy = [dict_to_list(elm) for elm in carnate]
                    if not self.is_dominated(listy):
                        yield self._sub_action_labels(asol)
