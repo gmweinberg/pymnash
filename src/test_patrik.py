@@ -1,42 +1,45 @@
 #!/usr/bin/env python
 from argparse import ArgumentParser
 from ast import literal_eval
-from pymnash.patrik import Patrik, get_key, describe_node
+from pymnash.patrik import Patrik, describe_key
 from pymnash.node import Node
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--childs", help="show child nodes of given node")
-    parser.add_argument("--score", help="attempt to score given node")
-    parser.add_argument("--count", help="count number nof nodes", action="store_true")
+    parser.add_argument("--node", help="node key to show values for")
+    #parser.add_argument("--actions", help="show player actions at given node", action="store_true")
+    parser.add_argument("--childs", help="show child nodes of given node", action="store_true")
+    parser.add_argument("--score", help="attempt to score given node", action="store_true")
+    parser.add_argument("--solve", help="solve from node", action="store_true")
+    parser.add_argument("--count", help="count total number of nodes", action="store_true")
+    parser.add_argument("--verbose", help="verbose", action="store_true")
     args = parser.parse_args()
-    thegame = Patrik()
+    thegame = Patrik(verbose=args.verbose)
     # print("nodes", thegame.nodes)
-
-    thegame.generate_subgraph(thegame.nodes[(None, None, None)])
 
     if args.count:
         print("node count {}".format(len(thegame.nodes)))
+
+    if args.node:
+        key = literal_eval(args.node)
+    else:
+        key = (None,)
+    node = thegame.nodes[key]
+
     if args.childs:
-        nodename = literal_eval(args.childs)
-        node1 = thegame.nodes[nodename]
-        print("childs:")
-        for name in thegame.get_successors(node1):
-            print(name, describe_node(name))
+        pass
+
+        #nodename = literal_eval(args.childs)
+        #node1 = thegame.nodes[nodename]
+        #print("childs:")
+        #for name in thegame.get_successors(node1):
+        #    print(name, describe_key(name))
     if args.score:
-        key = literal_eval(args.score)
-        node2 = thegame.nodes[key]
-        didit = thegame.set_scores(node2)
-        if not didit:
-            print("Initial attempt failed, setting child scores")
-            for subname in thegame.get_successors(node2):
-                subnode = thegame.nodes[subname]
-                thegame.set_scores(subnode)
-            thegame.set_scores(node2)
-        wtf = "wtf"
+        didit = thegame.set_scores(node)
+
+    if args.solve:
+        thegame.set_subscores(node)
 
 
 
-
-# ./test_patrik --childs "(None,None,None)"
-# ./test_patrik --childs (None, 0, 1, 1, False, 1)"
+# ./test_patrik.py --node (2, 2, 1, False, 3)" --score

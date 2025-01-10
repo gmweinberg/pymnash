@@ -2,7 +2,9 @@
 """Patrik is described here
    https://www.reddit.com/r/GAMETHEORY/comments/1h4f26q/help_with_calculating_the_nash_equilibrium_for_my/
    the name comes because I heard about it from a guy who heard about it from a guy, and one of those
-   guys is named Patrik"""
+   guys is named Patrik
+"""
+
 from math import isqrt
 import numpy as np
 from .game import Game 
@@ -12,67 +14,65 @@ from .nash_dag import Nash_DAG
 class Patrik(Nash_DAG):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        key = (None, None, None)
+        key = (None,)
         node = self.generate_node(key)
         self.generate_subgraph(node)
 
     def generate_node(self, key):
+        if self.verbose:
+            print("generating node for key {}".format(key))
         terminal = False
         scores = None
-        if key[0] is not None:
-            terminal = True
-            if key[0] == 0:
-                scores = [1, 0]
-            else:
-                scores = [0, 1]
         node_ = Node(key, terminal=terminal, scores=scores)
         self.nodes[key] = node_
+        if key == (None,): # special root key
+            node_.min_guess = 1
+            node_.zero_played = False
+            node_.prior_guesses = -1
+            return node_
+        node_.coin = key[0]
+        node_.guesser = key[1]
+        node_.prior_guesses = key[2]
+        node_.zero_played = key[3]
+        node_.min_guess = key[4] # minimum nozero guess that could have been played here
+        if node_.coin == node_.guesser:
+            node_.terminal = True
+            node_.scores = [0, 1]
+        else:
+            if node_.prior_guesses == 2:
+                node_.terminal = True
+                node_.scores = [1, 0]
         return node_
 
-
-    def get_successors(self, node):
-        """For this game the node key is a tuple.
-        The element 0 is the winner at this node, 0, 1, or None. 
-           Unless it is none, there are no more elements.
-        The element 1 is the value chosen by the coin player.
-        The element 2 is the value chosen by the guesser.
-           If these are the same, the only child is guesser wins
-        Element 3 is number of guesses made (prior to node)
-        Element 4 is a boolean indicating 0 has been guessed
-        Element 5 is lowest int that could have been played at this node"""
-        key = node.key
-        if key[0] is not None: # terminal nodes
-            return []
-        result = []
-        if key[1] is None: # special root node is (None, None, None)
-            for cp in range(6):
-                for gp in range(6):
-                    result.append((None, cp, gp, 0, False, 1))
-            return result
-        coin = key[1]
-        guesser = key[2]
-        if coin == guesser:
-            return [(1,)]
-        guesses_made = key[3]
-        if guesses_made == 2:
-            return [(0,)]
-        zero_gone = key[1] == 0 or key[4]
-        min_guess = key[5]
-        if coin is not None and coin >= min_guess:
-            min_guess = coin + 1
-        
-        guesses = [] # possible guesses for either player
-        if not zero_gone:
+    def get_player_actions(self, node_):
+        if node_.terminal:
+            return [[], []]
+        if node_.key == (None,):
+            guesses = [ii for ii in range(6)]
+            return [guesses, guesses]
+        guesses = []
+        if not node_.zero_played:
             guesses.append(0)
-        for guess in range(min_guess, 5):
-            guesses.append(guess)
+        min_guess = node_.min_guess
+        if node_.coin + 1 > min_guess:
+            min_guess = node_.coin + 1
+        for ii in range(min_guess, 5):
+            guesses.append(ii)
+        guesses.append(5)
+        return [guesses, guesses]
 
-        guesses.append(5) # can always guess 5, even if already guessed
-        for cp in guesses:
-            for gp in guesses:
-                newkey = (None, cp, gp, guesses_made + 1, zero_gone,  min_guess)
-                result.append(newkey)
-        return result
+    def get_child(self, node_, player_actions):
+        if player_actions[0] == 0:
+            zero_played = True
+        else:
+            zero_played = node_.zero_played
+        if player_actions[0] == 0:
+            min_guess = node_.min_guess
+        elif player_actions[0] < 5:
+            min_guess = player_actions[0] + 1
+        else:
+            min_guess = 5
+        return ((player_actions[0], player_actions[1], node_.prior_guesses + 1, zero_played, min_guess))
 
     def create_game(self, nodes):
         """Create the pymnash game from the nodes indicating possible succesor states.
@@ -94,7 +94,7 @@ def get_key(coin, guesser, guesses, zero_gone, min_guess=1) -> tuple:
         return (0,)
     return (None, coin, guesser, guesses, zero_gone, min_guess)
 
-def describe_node(key):
+def describe_key(key):
     """Helper function for showing key as human-readable values"""
     if key[0] is not None:
         if key[0] == 0:
@@ -103,9 +103,9 @@ def describe_node(key):
             return "guesser wins"
     if key[1] is None:
         return "root node"
-    coin =  key[1]
-    guesser = key[2]
-    guesses = key[3]
-    zero_gone = key[4]
-    min_guess = key[5]
+    coin =  key[0]
+    guesser = key[1]
+    guesses = key[2]
+    zero_gone = key[3]
+    min_guess = key[4]
     return "coin={};guesser={};guesses={};zerogone={};min_guess={}".format(*key[1:])
